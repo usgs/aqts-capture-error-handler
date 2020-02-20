@@ -1,0 +1,9 @@
+{
+  "name": "aqts-capture-error-handler",
+  "description": "Deployment via serverless",
+  "dependencies": {
+    "serverless": "^1.64.0",
+    "serverless-python-requirements": "^5.1.0",
+    "serverless-plugin-git-variables": "^3.4.0"
+  }
+}
