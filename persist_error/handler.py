@@ -20,4 +20,5 @@ def lambda_handler(event, context):
         message_body=json.dumps(event),
         region=region
     )
+    logger.info(f'Failed event sent to {queue_url}.')
     return event

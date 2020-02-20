@@ -15,7 +15,7 @@ provider:
     "wma:environment": ${self:provider.stage}
     "wma:taggingVersion": 0.0.1
     "wma:costCenter": TBD
-#    commitIdentifier: ${git:sha1}
+    commitIdentifier: ${git:sha1}
 
 custom:
   exportGitVariables: false
@@ -26,7 +26,7 @@ custom:
 
 functions:
   aqtsErrorHandler:
-    handler: error_handler.handler.lambda_handler
+    handler: persist_error.handler.lambda_handler
     role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
     environment:
       AWS_SQS_QUEUE_URL:
