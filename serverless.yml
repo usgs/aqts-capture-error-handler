@@ -1,0 +1,56 @@
+service: aqts-capture-error-handler
+
+provider:
+  name: aws
+  region: ${opt:region, 'us-west-2'}
+  stage: ${opt:stage, 'TEST'}
+  runtime: python3.8
+  memorySize: 128
+  logRetentionInDays: 30
+  deploymentBucket:
+    name: iow-cloud-applications
+  stackTags:
+    "wma:applicationId": "Aquarius TS Capture Error Handler"
+    "wma:contact": "Andrew Yan ayan@usgs.gov"
+    "wma:environment": ${self:provider.stage}
+    "wma:taggingVersion": 0.0.1
+    "wma:costCenter": TBD
+    commitIdentifier: ${git:sha1}
+
+custom:
+  exportGitVariables: false
+  accountNumber: ${ssm:/iow/aws/accountNumber}
+  vpc:
+    securityGroupIds: ${ssm:/iow/retriever-capture/${self:provider.stage}/securityGroupIds~split}
+    subnetIds: ${ssm:/iow/aws/vpc/${self:provider.stage}/subnetIds~split}
+
+functions:
+  aqtsErrorHandler:
+    handler: error_handler.handler.lambda_handler
+    role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
+    environment:
+      AWS_SQS_QUEUE_URL:
+        Ref: errorPersistQueue
+      AWS_DEPLOYMENT_REGION: ${self:provider.region}
+    vpc: ${self:custom.vpc}
+
+resources:
+  Resources:
+    errorPersistQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: aqts-capture-error-queue-${self:provider.stage}
+        MessageRetentionPeriod: 1209600
+
+plugins:
+  - serverless-plugin-git-variables
+  - serverless-python-requirements
+
+package:
+  exclude:
+    - node_modules/**
+    - Dockerfile
+    - .dockerignore
+    - Jenkinsfile
+    - package.json
+    - package-lock.json
