@@ -1,3 +1,4 @@
+import json
 import os
 import logging
 
@@ -16,7 +17,7 @@ def lambda_handler(event, context):
 
     send_message(
         queue_url=queue_url,
-        message_body=event,
+        message_body=json.dumps(event),
         region=region
     )
     return event
