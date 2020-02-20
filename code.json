@@ -11,15 +11,15 @@
       "licenses": [
         {
           "name": "Public Domain, CC0-1.0",
-          "URL": "https://github.com/usgs/aqts-capture-state-machine/blob/master/LICENSE.md"
+          "URL": "https://github.com/usgs/aqts-capture-error-handler/blob/master/LICENSE.md"
         }
       ]
     },
 
-    "homepageURL": "https://github.com/usgs/aqts-capture-state-machine",
-    "downloadURL": "https://github.com/usgs/aqts-capture-state-machine/archive/master.zip",
-    "disclaimerURL": "https://github.com/usgs/aqts-capture-state-machine/blob/master/DISCLAIMER.md",
-    "repositoryURL": "https://github.com/usgs/aqts-capture-state-machine.git",
+    "homepageURL": "https://github.com/usgs/aqts-capture-error-handler",
+    "downloadURL": "https://github.com/usgs/aqts-capture-error-handler/archive/master.zip",
+    "disclaimerURL": "https://github.com/usgs/aqts-capture-error-handler/blob/master/DISCLAIMER.md",
+    "repositoryURL": "https://github.com/usgs/aqts-capture-error-handler.git",
     "vcs": "git",
 
     "laborHours": null,
@@ -32,7 +32,8 @@
     ],
 
     "languages": [
-      "yml"
+      "yml",
+      "python"
     ],
 
     "contact": {
@@ -41,7 +42,7 @@
     },
 
     "date": {
-      "metadataLastUpdated": "2020-01-29"
+      "metadataLastUpdated": "2020-02-20"
     }
   }
 ]
