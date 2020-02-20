@@ -15,7 +15,7 @@ provider:
     "wma:environment": ${self:provider.stage}
     "wma:taggingVersion": 0.0.1
     "wma:costCenter": TBD
-    commitIdentifier: ${git:sha1}
+#    commitIdentifier: ${git:sha1}
 
 custom:
   exportGitVariables: false
