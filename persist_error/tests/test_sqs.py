@@ -12,6 +12,7 @@ class TestSendMessage(TestCase):
     def setUp(self):
         self.queue_url = 'https://sqs.us-south-10.amazonaws.com/887501/some-queue-name'
         self.message_body = 'a message body'
+        self.message_grp_id = 'message_id'
         self.region = 'us-south-10'
 
     @mock.patch('persist_error.sqs.boto3.client', autospec=True)
@@ -22,10 +23,12 @@ class TestSendMessage(TestCase):
         send_message(
             queue_url=self.queue_url,
             message_body=self.message_body,
+            message_grp_id=self.message_grp_id,
             region=self.region
         )
         m_client.assert_called_with('sqs', region_name=self.region)
         mock_sqs.send_message.assert_called_with(
             QueueUrl=self.queue_url,
-            MessageBody=self.message_body
+            MessageBody=self.message_body,
+            MessageGroupId=self.message_grp_id
         )
