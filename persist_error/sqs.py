@@ -6,6 +6,16 @@ import boto3
 
 
 def send_message(queue_url, message_body, region='us-west-2'):
+    """
+    Send a message to an SQS queue.
+
+    :param str queue_url: http url of the SQS queue
+    :param str message_body: the message body
+    :param str region: AWS region
+    :return: message send response
+    :rtype: dict
+
+    """
     sqs = boto3.client('sqs', region_name=region)
     resp = sqs.send_message(QueueUrl=queue_url, MessageBody=message_body)
     return resp
