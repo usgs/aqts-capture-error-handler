@@ -2,7 +2,7 @@ import json
 import os
 import logging
 
-from .sfn import get_execution_history
+from .sfn import get_execution_history, find_root_failure_state
 from .sqs import send_message
 
 
@@ -23,10 +23,13 @@ def lambda_handler(event, context):
         region=region
     )
     logger.info(f'Execution History: {exec_history}')
+
+    failure_state = find_root_failure_state(exec_history)
+    logger.info(f'Failure state: {failure_state}')
     send_message(
         queue_url=queue_url,
-        message_body=json.dumps(event),
+        message_body=json.dumps(failure_state),
         region=region
     )
     logger.info(f'Failed event sent to {queue_url}.')
-    return event
+    return failure_state
