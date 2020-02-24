@@ -2,7 +2,7 @@
 Module for working with the AWS Step Functions API
 
 """
-import ast
+import json
 
 import boto3
 
@@ -23,6 +23,6 @@ def find_root_failure_state(execution_history):
         search_result = search_dictionary_list(execution_events, 'id', state_previous_event_id)[0]
         state = search_result
     state_event_details = state['stateEnteredEventDetails']
-    root_input = ast.literal_eval(state_event_details['input'])
+    root_input = json.loads(state_event_details['input'])
     root_input['resumeState'] = state_event_details['name']
     return root_input
