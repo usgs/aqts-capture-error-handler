@@ -17,7 +17,7 @@ def get_execution_history(execution_arn, region='us-west-2'):
 
 def find_root_failure_state(execution_history):
     execution_events = execution_history['events']
-    state = search_dictionary_list(execution_events, 'type', 'LambdaFunctionFailed')
+    state = search_dictionary_list(execution_events, 'type', 'LambdaFunctionFailed')[-1]
     while state['type'] != 'TaskStateEntered':
         state_previous_event_id = state['previousEventId']
         search_result = search_dictionary_list(execution_events, 'id', state_previous_event_id)[0]
