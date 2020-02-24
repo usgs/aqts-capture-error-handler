@@ -42,6 +42,7 @@ resources:
         QueueName: aqts-capture-error-queue-expt-${self:provider.stage}.fifo
         MessageRetentionPeriod: 1209600
         FifoQueue: true
+        DelaySeconds: 90
 
 plugins:
   - serverless-plugin-git-variables
