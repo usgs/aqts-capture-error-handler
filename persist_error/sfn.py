@@ -23,7 +23,7 @@ def find_root_failure_state(execution_history):
         search_result = search_dictionary_list(execution_events, 'id', state_previous_event_id)[0]
         state = search_result
     state_event_details = state['stateEnteredEventDetails']
-    return (
-        state_event_details['name'],
-        ast.literal_eval(state_event_details['input'])
-    )
+    return {
+        'state': state_event_details['name'],
+        'input': ast.literal_eval(state_event_details['input'])
+    }
