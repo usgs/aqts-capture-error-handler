@@ -1,4 +1,4 @@
-service: aqts-capture-error-handler
+service: aqts-capture-error-handler-expt
 
 provider:
   name: aws
