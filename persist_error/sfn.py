@@ -31,7 +31,7 @@ def get_execution_history(execution_arn, region='us-west-2'):
             history = sfn.get_execution_history(executionArn=execution_arn)
         logger.info(f'History: {history}')
         events.extend(history['events'])
-        next_token = history.get('nextToken')
+        next_token = history.get('nextToken', '')
         iter_count += 1
     return {'events': events}
 
