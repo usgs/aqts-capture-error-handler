@@ -3,6 +3,7 @@ Module for working with the AWS Step Functions API
 
 """
 import json
+import logging
 
 import boto3
 
@@ -13,6 +14,9 @@ ENTRY_FAIL_MAPPING = {
     'MapStateFailed': 'MapStateEntered',
     'TaskStateEntered': 'TaskStateEntered'
 }
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 
 def get_execution_history(execution_arn, region='us-west-2'):
@@ -25,8 +29,10 @@ def get_execution_history(execution_arn, region='us-west-2'):
             history = sfn.get_execution_history(executionArn=execution_arn, nextToken=next_token)
         else:
             history = sfn.get_execution_history(executionArn=execution_arn)
+        logger.info(f'History: {history}')
         events.extend(history['events'])
         next_token = history.get('nextToken')
+        iter_count += 1
     return {'events': events}
 
 
