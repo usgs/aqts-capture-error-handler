@@ -16,9 +16,18 @@ ENTRY_FAIL_MAPPING = {
 
 
 def get_execution_history(execution_arn, region='us-west-2'):
-    sfn = boto3.client('stepfunctions', region_name=region)
-    history = sfn.get_execution_history(executionArn=execution_arn)
-    return history
+    next_token = ''
+    iter_count = 0
+    events = []
+    while next_token or iter_count == 0:
+        sfn = boto3.client('stepfunctions', region_name=region)
+        if next_token:
+            history = sfn.get_execution_history(executionArn=execution_arn, nextToken=next_token)
+        else:
+            history = sfn.get_execution_history(executionArn=execution_arn)
+        events.extend(history['events'])
+        next_token = history.get('nextToken')
+    return {'events': events}
 
 
 def backtrack_to_failure(execution_history):
