@@ -12,7 +12,7 @@ from .utils import search_dictionary_list
 
 ENTRY_FAIL_MAPPING = {
     'MapStateFailed': 'MapStateEntered',
-    'TaskStateEntered': 'TaskStateEntered'
+    'LambdaFunctionFailed': 'TaskStateEntered'
 }
 
 logger = logging.getLogger()
@@ -23,8 +23,8 @@ def get_execution_history(execution_arn, region='us-west-2'):
     next_token = ''
     iter_count = 0
     events = []
+    sfn = boto3.client('stepfunctions', region_name=region)
     while next_token or iter_count == 0:
-        sfn = boto3.client('stepfunctions', region_name=region)
         if next_token:
             history = sfn.get_execution_history(executionArn=execution_arn, nextToken=next_token)
         else:
@@ -38,7 +38,7 @@ def get_execution_history(execution_arn, region='us-west-2'):
 
 def backtrack_to_failure(execution_history):
     event = execution_history['events'][-1]
-    task_type = ''
+    task_type = event['type']
     while 'Failed' not in task_type:
         previous_event_id = event['previousEventId']
         search_result = search_dictionary_list(execution_history['events'], 'id', previous_event_id)[0]
