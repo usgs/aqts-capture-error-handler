@@ -136,6 +136,7 @@ class TestLambdaHandler(TestCase):
         mock_eh.assert_called_once()
         mock_sn.assert_called_with(
             self.sns_arn,
-            '{"value": 3, "stepFunctionFails": 11, "resumeState": "someState"}'
+            ("This input has caused 10 failures: {'value': 3, 'stepFunctionFails': 11, 'resumeState': 'someState'}.\n"
+             "Please take a closer look at the underlying records and data.")
         )
         mock_sm.assert_not_called()
