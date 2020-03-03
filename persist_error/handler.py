@@ -26,7 +26,10 @@ def lambda_handler(event, context):
 
     failure_state = find_root_failure_state(exec_history)
     logger.info(f'Failure state: {failure_state}')
-    failure_state['stepFunctionFails'] += 1  # increment number of failures
+    try:
+        failure_state['stepFunctionFails'] += 1  # increment number of failures
+    except KeyError:
+        failure_state['stepFunctionFails'] = 1
     logger.info(f'Failure state: {failure_state}')
     send_message(
         queue_url=queue_url,
