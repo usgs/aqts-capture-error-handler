@@ -46,6 +46,10 @@ def lambda_handler(event, context):
     else:
         # abort retry attempts if there are more than 10 failures
         # send a message to SNS for human to deal with it
-        resp = send_notification(sns_arn, json.dumps(failure_state))
+        failure_message = (
+            f'This input has caused 10 failures: {failure_state}.\n'
+            f'Please take a closer look at the underlying records and data.'
+        )
+        resp = send_notification(sns_arn, failure_message)
         logger.info(f'This failed more than 10 times: {failure_state}. Notification sent to SNS: {resp}.')
     return failure_state
