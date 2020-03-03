@@ -53,7 +53,7 @@ def backtrack_to_failure(execution_history):
 
     """
     event_ids = [event['id'] for event in execution_history['events']]
-    max_id = max(event_ids)  # find the event with highest ID to get teh most recent
+    max_id = max(event_ids)  # find the event with highest ID to get the most recent
     event = search_dictionary_list(execution_history['events'], 'id', max_id)[0]
     task_type = event['type']
     while 'Failed' not in task_type:
