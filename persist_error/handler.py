@@ -3,6 +3,7 @@ import os
 import logging
 
 from .sfn import get_execution_history, find_root_failure_state
+from .sns import send_notification
 from .sqs import send_message
 
 
@@ -16,6 +17,7 @@ def lambda_handler(event, context):
 
     execution_arn = event['executionArn']
     queue_url = os.getenv('AWS_SQS_QUEUE_URL')
+    sns_arn = os.getenv('AWS_SNS_ARN')
     region = os.getenv('AWS_DEPLOYMENT_REGION')
 
     exec_history = get_execution_history(
@@ -30,11 +32,15 @@ def lambda_handler(event, context):
         failure_state['stepFunctionFails'] += 1  # increment number of failures
     except KeyError:
         failure_state['stepFunctionFails'] = 1
-    logger.info(f'Failure state: {failure_state}')
-    send_message(
-        queue_url=queue_url,
-        message_body=json.dumps(failure_state),
-        region=region
-    )
-    logger.info(f'Failed event sent to {queue_url}.')
+    logger.info(f'Incremented failure state: {failure_state}')
+    if failure_state['stepFunctionsFails'] <= 10:
+        send_message(
+            queue_url=queue_url,
+            message_body=json.dumps(failure_state),
+            region=region
+        )
+        logger.info(f'Failed event sent to {queue_url}.')
+    else:
+        resp = send_notification(sns_arn, json.dumps(failure_state))
+        logger.info(f'This failed more than 10 times: {failure_state}. Notification sent to SNS: {resp}.')
     return failure_state
