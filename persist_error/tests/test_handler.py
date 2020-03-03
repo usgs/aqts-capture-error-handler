@@ -21,9 +21,10 @@ class TestLambdaHandler(TestCase):
     }
 
     def setUp(self):
-        self.execution_arn = 'arn:aws:states:us-south-10:98877654311:blah:a17h83j-p84321'
-        self.initial_event = {'executionArn': self.execution_arn}
-        self.excessive_fail_event = {'executionArn': self.execution_arn, 'stepFunctionFails': 10}
+        self.initial_execution_arn = 'arn:aws:states:us-south-10:98877654311:blah:a17h83j-p84321'
+        self.fail_execution_arn = 'arn:aws:states:us-south-10:98877654311:blah:i3m556d-b5903fe'
+        self.initial_event = {'executionArn': self.initial_execution_arn}
+        self.excessive_fail_event = {'executionArn': self.fail_execution_arn}
         self.context = {'element': 'lithium'}
         self.initial_execution_history = {
             'events': [
