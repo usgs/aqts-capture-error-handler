@@ -31,17 +31,25 @@ functions:
     environment:
       AWS_SQS_QUEUE_URL:
         Ref: errorPersistQueue
+      AWS_SNS_ARN:
+        Ref: notificationService
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
     vpc: ${self:custom.vpc}
 
 resources:
   Resources:
+    notificationService:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: aqts-capture-error-notification-${self:provider.stage}
+        TopicName: aqts-capture-error-notification-${self:provider.stage}
     errorPersistQueue:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: aqts-capture-error-queue-${self:provider.stage}.fifo
         MessageRetentionPeriod: 1209600
         FifoQueue: true
+        DelaySeconds: 90
 
 plugins:
   - serverless-plugin-git-variables
