@@ -28,14 +28,14 @@ class TestLambdaHandler(TestCase):
         self.initial_execution_history = {
             'events': [
                 {
-                    'timestamp': datetime(2375, 5, 6, 17, 20, 33),
+                    'timestamp': datetime(2379, 5, 6, 17, 20, 33),
                     'id': 1,
                     'previousEventId': 0,
                     'type': 'ExecutionStated',
                     'executionStatedEventDetails': {'input': '{"value": 3}'}
                 },
                 {
-                    'timestamp': datetime(2375, 5, 6, 17, 21, 5),
+                    'timestamp': datetime(2379, 5, 6, 17, 21, 5),
                     'id': 2,
                     'previousEventId': 1,
                     'type': 'TaskStateEntered',
@@ -45,7 +45,7 @@ class TestLambdaHandler(TestCase):
                     }
                 },
                 {
-                    'timestamp': datetime(2375, 5, 6, 17, 21, 17),
+                    'timestamp': datetime(2379, 5, 6, 17, 21, 17),
                     'id': 3,
                     'previousEventId': 2,
                     'type': 'LambdaFunctionFailed',
@@ -54,7 +54,7 @@ class TestLambdaHandler(TestCase):
                     }
                 },
                 {
-                    'timestamp': datetime(2375, 5, 6, 17, 21, 17),
+                    'timestamp': datetime(2379, 5, 6, 17, 21, 17),
                     'id': 4,
                     'previousEventId': 3,
                     'type': 'TaskStateEntered',
