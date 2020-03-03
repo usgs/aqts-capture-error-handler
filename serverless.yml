@@ -1,4 +1,4 @@
-service: aqts-capture-error-handler-expt
+service: aqts-capture-error-handler
 
 provider:
   name: aws
@@ -46,7 +46,7 @@ resources:
     errorPersistQueue:
       Type: AWS::SQS::Queue
       Properties:
-        QueueName: aqts-capture-error-queue-expt-${self:provider.stage}.fifo
+        QueueName: aqts-capture-error-queue-${self:provider.stage}.fifo
         MessageRetentionPeriod: 1209600
         FifoQueue: true
         DelaySeconds: 90
