@@ -1,5 +1,5 @@
 """
-Module for working with the AWS Step Functions API
+Module for working with the AWS Step Functions API.
 
 """
 import json

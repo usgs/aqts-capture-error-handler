@@ -1,5 +1,5 @@
 """
-Tests for the AWS Lambda handler
+Tests for the AWS Lambda handler.
 
 """
 from datetime import datetime
