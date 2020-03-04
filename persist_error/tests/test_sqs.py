@@ -1,5 +1,5 @@
 """
-Tests for the sqs module
+Tests for the sqs module.
 
 """
 from unittest import TestCase, mock
