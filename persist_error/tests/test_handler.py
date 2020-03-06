@@ -108,8 +108,8 @@ class TestLambdaHandler(TestCase):
         }
 
     @mock.patch.dict('persist_error.handler.os.environ', mock_env_vars)
-    @mock.patch('persist_error.handler.send_message')
-    @mock.patch('persist_error.handler.get_execution_history')
+    @mock.patch('persist_error.handler.send_message', autospec=True)
+    @mock.patch('persist_error.handler.get_execution_history', autospec=True)
     def test_basic_event_handling(self, mock_eh, mock_sm):
         mock_eh.return_value = self.initial_execution_history
         result = lambda_handler(self.initial_event, self.context)
@@ -128,9 +128,9 @@ class TestLambdaHandler(TestCase):
         )
 
     @mock.patch.dict('persist_error.handler.os.environ', mock_env_vars)
-    @mock.patch('persist_error.handler.send_message')
-    @mock.patch('persist_error.handler.send_notification')
-    @mock.patch('persist_error.handler.get_execution_history')
+    @mock.patch('persist_error.handler.send_message', autospec=True)
+    @mock.patch('persist_error.handler.send_notification', autospec=True)
+    @mock.patch('persist_error.handler.get_execution_history', autospec=True)
     def test_excessive_failures(self, mock_eh, mock_sn, mock_sm):
         mock_eh.return_value = self.excessive_fail_execution_history
         lambda_handler(self.excessive_fail_event, self.context)

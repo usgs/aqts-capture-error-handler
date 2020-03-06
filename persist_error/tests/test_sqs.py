@@ -16,7 +16,7 @@ class TestSendMessage(TestCase):
         self.deduplication_id = '584-2ab-3381z'
         self.region = 'us-south-10'
 
-    @mock.patch('persist_error.sqs.uuid')
+    @mock.patch('persist_error.sqs.uuid', autospec=True)
     @mock.patch('persist_error.sqs.boto3.client', autospec=True)
     def test_message_send(self, m_client, m_uuid):
         mock_sqs = mock.Mock()
