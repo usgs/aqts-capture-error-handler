@@ -35,7 +35,8 @@ def lambda_handler(event, context):
         failure_state['stepFunctionFails'] = 1  # start incrementing failures if this is first one
     logger.info(f'Incremented failure state: {failure_state}')
 
-    if failure_state['stepFunctionFails'] <= 2:
+    failure_limit = 2
+    if failure_state['stepFunctionFails'] <= failure_limit:
         # send a message to SQS to restart the step function
         send_message(
             queue_url=queue_url,
@@ -51,5 +52,5 @@ def lambda_handler(event, context):
             f'Please take a closer look at the underlying records and data.'
         )
         resp = send_notification(sns_arn, failure_message)
-        logger.info(f'This failed more than 10 times: {failure_state}. Notification sent to SNS: {resp}.')
+        logger.info(f'This failed more than {failure_limit} times: {failure_state}. Notification sent to SNS: {resp}.')
     return failure_state
