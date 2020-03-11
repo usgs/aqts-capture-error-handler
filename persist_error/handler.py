@@ -18,6 +18,7 @@ def lambda_handler(event, context):
     queue_url = os.getenv('AWS_SQS_QUEUE_URL')
     sns_arn = os.getenv('AWS_SNS_ARN')
     region = os.getenv('AWS_DEPLOYMENT_REGION')
+    max_retries = int(os.getenv('MAX_RETRIES', 4))
 
     execution_arn = event['executionArn']
     exec_history = get_execution_history(
@@ -35,8 +36,7 @@ def lambda_handler(event, context):
         failure_state['stepFunctionFails'] = 1  # start incrementing failures if this is first one
     logger.info(f'Incremented failure state: {failure_state}')
 
-    failure_limit = 2
-    if failure_state['stepFunctionFails'] <= failure_limit:
+    if failure_state['stepFunctionFails'] <= max_retries:
         # send a message to SQS to restart the step function
         send_message(
             queue_url=queue_url,
@@ -48,9 +48,9 @@ def lambda_handler(event, context):
         # abort retry attempts if there more failures than the set condition
         # send a message to SNS for human to deal with it
         failure_message = (
-            f'This input has caused {failure_limit} failures: {failure_state}.\n'
+            f'This input has caused {max_retries} failures: {failure_state}.\n'
             f'Please take a closer look at the underlying records and data.'
         )
         resp = send_notification(sns_arn, failure_message)
-        logger.info(f'Input failed more than {failure_limit} times: {failure_state}. Notification sent to SNS: {resp}.')
+        logger.info(f'Input failed more than {max_retries} times: {failure_state}. Notification sent to SNS: {resp}.')
     return failure_state
