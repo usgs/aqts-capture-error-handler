@@ -14,10 +14,12 @@ class TestLambdaHandler(TestCase):
     queue_url = 'https://sqs.us-south-10.amazonaws.com/887501/some-queue-name'
     sns_arn = 'arn:aws:sns:us-south-23:5746521541:fake-notification'
     region = 'us-south-10'
+    max_retries = 6
     mock_env_vars = {
         'AWS_SQS_QUEUE_URL': queue_url,
         'AWS_SNS_ARN': sns_arn,
-        'AWS_DEPLOYMENT_REGION': region
+        'AWS_DEPLOYMENT_REGION': region,
+        'MAX_RETRIES': str(max_retries)
     }
 
     def setUp(self):
@@ -82,7 +84,7 @@ class TestLambdaHandler(TestCase):
                     'type': 'TaskStateEntered',
                     'stateEnteredEventDetails': {
                         'name': 'someState',
-                        'input': '{"value": 3, "stepFunctionFails": 10}'
+                        'input': '{"value": 3, "stepFunctionFails": 6}'
                     }
                 },
                 {
@@ -137,7 +139,8 @@ class TestLambdaHandler(TestCase):
         mock_eh.assert_called_once()
         mock_sn.assert_called_with(
             self.sns_arn,
-            ("This input has caused 10 failures: {'value': 3, 'stepFunctionFails': 11, 'resumeState': 'someState'}.\n"
+            (f"This input has caused {self.max_retries} failures:"
+             f" {{'value': 3, 'stepFunctionFails': {self.max_retries + 1}, 'resumeState': 'someState'}}.\n"
              "Please take a closer look at the underlying records and data.")
         )
         mock_sm.assert_not_called()
