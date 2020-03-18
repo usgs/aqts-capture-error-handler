@@ -32,18 +32,54 @@ functions:
       AWS_SQS_QUEUE_URL:
         Ref: errorPersistQueue
       AWS_SNS_ARN:
-        Ref: notificationService
+        Ref: snsTopic
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
       MAX_RETRIES: 2
     vpc: ${self:custom.vpc}
 
 resources:
   Resources:
-    notificationService:
+    snsTopic:
       Type: AWS::SNS::Topic
       Properties:
-        DisplayName: aqts-capture-error-notification-${self:provider.stage}
-        TopicName: aqts-capture-error-notification-${self:provider.stage}
+        DisplayName: ${self:service}-${self:provider.stage}-topic
+        TopicName: ${self:service}-${self:provider.stage}-topic
+    concurrencyAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: ${self:service}-${self:provider.stage}-concurrency-alarm
+        AlarmDescription: Notify when concurrency exceeds the specified threshold
+        Namespace: 'AWS/Lambda'
+        Dimensions:
+          - Name: FunctionName
+            Value:
+              Ref: AqtsErrorHandlerLambdaFunction
+        MetricName: ConcurrentExecutions
+        Statistic: Sum
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        Threshold: 150
+        Period: 60
+        EvaluationPeriods: 1
+        AlarmActions:
+          - Ref: snsTopic
+    errorAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: ${self:service}-${self:provider.stage}-error-alarm
+        AlarmDescription: Notify when number of errors exceeds the specified threshold
+        Namespace: 'AWS/Lambda'
+        Dimensions:
+          - Name: FunctionName
+            Value:
+              Ref: AqtsErrorHandlerLambdaFunction
+        MetricName: Errors
+        Statistic: Sum
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        Threshold: 10
+        Period: 60
+        EvaluationPeriods: 1
+        AlarmActions:
+          - Ref: snsTopic
     errorPersistQueue:
       Type: AWS::SQS::Queue
       Properties:
