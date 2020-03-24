@@ -25,5 +25,5 @@ class TestSendNotification(TestCase):
         m_sns.publish.assert_called_with(
             TopicArn=self.sns_arn,
             Message=self.payload,
-            Subject=f'Excessive Capture Failures Reported on {self.execution_arn}'
+            Subject=f'Excessive Capture Failures Reported'
         )

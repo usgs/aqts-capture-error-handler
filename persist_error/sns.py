@@ -21,6 +21,6 @@ def send_notification(sns_arn, execution_arn, payload, region='us-west-2'):
     resp = sns.publish(
         TopicArn=sns_arn,
         Message=payload,
-        Subject=f'Excessive Capture Failures Reported on {execution_arn}'
+        Subject=f'Excessive Capture Failures Reported'
     )
     return resp
