@@ -11,6 +11,7 @@ class TestSendNotification(TestCase):
 
     def setUp(self):
         self.sns_arn = 'arn:aws:sns:us-south-19:5746521541:fake-notification'
+        self.execution_arn = 'arn:aws:states:us-south-19:5746521541:aad3b3-fkl33q4-dkwwdc'
         self.region = 'us-south-19'
         self.payload = 'fake payload'
 
@@ -19,10 +20,10 @@ class TestSendNotification(TestCase):
         m_sns = mock.Mock()
         m_client.return_value = m_sns
 
-        send_notification(self.sns_arn, self.payload, self.region)
+        send_notification(self.sns_arn,  self.execution_arn, self.payload, self.region)
         m_client.assert_called_with('sns', region_name=self.region)
         m_sns.publish.assert_called_with(
             TopicArn=self.sns_arn,
             Message=self.payload,
-            Subject='Excessive Capture Failures'
+            Subject=f'Excessive Capture Failures Reported on {self.execution_arn}'
         )
