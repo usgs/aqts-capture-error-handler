@@ -55,7 +55,7 @@ resources:
             Value:
               Ref: AqtsErrorHandlerLambdaFunction
         MetricName: ConcurrentExecutions
-        Statistic: Sum
+        Statistic: Maximum
         ComparisonOperator: GreaterThanOrEqualToThreshold
         Threshold: 150
         Period: 60
