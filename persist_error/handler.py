@@ -27,8 +27,17 @@ def lambda_handler(event, context):
     )
     logger.info(f'Execution History: {exec_history}')
 
-    failure_state = find_root_failure_state(exec_history)
-    logger.info(f'Failure state: {failure_state}')
+    try:
+        failure_state = find_root_failure_state(exec_history)
+    except:
+        error_handler_msg = (
+            f'Human intervention required for execution {execution_arn}. '
+            'Unable to figure out what went wrong with this execution.'
+        )
+        send_notification(sns_arn, error_handler_msg)
+        return  # drop out of the function
+    else:
+        logger.info(f'Failure state: {failure_state}')
 
     try:
         failure_state['stepFunctionFails'] += 1  # increment number of failures
@@ -52,6 +61,6 @@ def lambda_handler(event, context):
             f'This input has caused {max_retries} failures: {failure_state}.\n'
             f'Please take a closer look at the underlying records and data.'
         )
-        resp = send_notification(sns_arn, execution_arn, failure_message)
+        resp = send_notification(sns_arn, failure_message)
         logger.info(f'Input failed more than {max_retries} times: {failure_state}. Notification sent to SNS: {resp}.')
     return failure_state

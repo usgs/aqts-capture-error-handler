@@ -11,7 +11,8 @@ from .utils import search_dictionary_list
 
 ENTRY_FAIL_MAPPING = {
     'MapStateFailed': 'MapStateEntered',
-    'LambdaFunctionFailed': 'TaskStateEntered'
+    'LambdaFunctionFailed': 'TaskStateEntered',
+    'LambdaFunctionTimedOut': 'TaskStateEntered'
 }
 
 
@@ -52,15 +53,17 @@ def backtrack_to_failure(execution_history):
     :rtype: dict
 
     """
+    error_found = False
     event_ids = [event['id'] for event in execution_history['events']]
     max_id = max(event_ids)  # find the event with highest ID to get the most recent
     event = search_dictionary_list(execution_history['events'], 'id', max_id)[0]
-    task_type = event['type']
-    while 'Failed' not in task_type:
+    while error_found is False:
         previous_event_id = event['previousEventId']
         search_result = search_dictionary_list(execution_history['events'], 'id', previous_event_id)[0]
         task_type = search_result['type']
         event = search_result
+        if 'Failed' in task_type or 'TimedOut' in task_type:
+            error_found = True
     return event
 
 

@@ -77,7 +77,7 @@ class TestGetExecutionHistory(TestCase):
 class TestBacktrackToFailure(TestCase):
 
     def setUp(self):
-        self.execution_history = {
+        self.execution_history_failure = {
             'events': [
                 {
                     'timestamp': datetime(2375, 5, 6, 17, 20, 33),
@@ -117,11 +117,57 @@ class TestBacktrackToFailure(TestCase):
                 }
             ]
         }
+        self.execution_history_timeout = {
+            'events': [
+                {
+                    'timestamp': datetime(2375, 5, 6, 17, 20, 33),
+                    'id': 1,
+                    'previousEventId': 0,
+                    'type': 'ExecutionStated',
+                    'executionStatedEventDetails': {'input': '{"value": 3}'}
+                },
+                {
+                    'timestamp': datetime(2375, 5, 6, 17, 21, 5),
+                    'id': 2,
+                    'previousEventId': 1,
+                    'type': 'TaskStateEntered',
+                    'stateEnteredEventDetails': {
+                        'name': 'someState',
+                        'input': '{"value": "3"}'
+                    }
+                },
+                {
+                    'timestamp': datetime(2375, 5, 6, 17, 21, 17),
+                    'id': 3,
+                    'previousEventId': 2,
+                    'type': 'LambdaFunctionFailed',
+                    'lambdaFunctionTimedOutEventDetails': {
+                        'cause': '{"error": "States.Timeout"}'
+                    }
+                },
+                {
+                    'timestamp': datetime(2375, 5, 6, 17, 21, 17),
+                    'id': 4,
+                    'previousEventId': 3,
+                    'type': 'TaskStateEntered',
+                    'stateEnteredEventDetails': {
+                        'name': 'someOtherState',
+                        'input': '{"value": "3"}'
+                    }
+                }
+            ]
+        }
 
     def test_finding_failed_state(self):
-        result = backtrack_to_failure(self.execution_history)
+        result = backtrack_to_failure(self.execution_history_failure)
         self.assertDictEqual(
-            result, self.execution_history['events'][2]
+            result, self.execution_history_failure['events'][2]
+        )
+
+    def test_finding_timeout_state(self):
+        result = backtrack_to_failure(self.execution_history_timeout)
+        self.assertDictEqual(
+            result, self.execution_history_timeout['events'][2]
         )
 
 

@@ -139,10 +139,27 @@ class TestLambdaHandler(TestCase):
         mock_eh.assert_called_once()
         mock_sn.assert_called_with(
             self.sns_arn,
-            self.fail_execution_arn,
             (f"Step function execution {self.fail_execution_arn} has terminally failed. "
              f"This input has caused {self.max_retries} failures:"
              f" {{'value': 3, 'stepFunctionFails': {self.max_retries + 1}, 'resumeState': 'someState'}}.\n"
              "Please take a closer look at the underlying records and data.")
         )
         mock_sm.assert_not_called()
+
+    @mock.patch.dict('persist_error.handler.os.environ', mock_env_vars)
+    @mock.patch('persist_error.handler.send_message', autospec=True)
+    @mock.patch('persist_error.handler.send_notification', autospec=True)
+    @mock.patch('persist_error.handler.get_execution_history', autospec=True)
+    @mock.patch('persist_error.handler.find_root_failure_state', autospec=True)
+    def test_failure_trace_exception(self, mock_frfs, mock_eh, mock_sn, mock_sm):
+        mock_frfs.side_effect = ValueError
+        mock_eh.return_value = self.initial_execution_history
+        lambda_handler(self.initial_event, self.context)
+        mock_eh.assert_called_once()
+        mock_sn.assert_called_with(
+            self.sns_arn,
+            (f'Human intervention required for execution {self.initial_execution_arn}. '
+             'Unable to figure out what went wrong with this execution.')
+        )
+        mock_sm.assert_not_called()
+
