@@ -34,7 +34,7 @@ functions:
       AWS_SNS_ARN:
         Ref: snsTopic
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
-      MAX_RETRIES: 2
+      MAX_RETRIES: 3
     vpc: ${self:custom.vpc}
 
 resources:
@@ -86,7 +86,7 @@ resources:
         QueueName: aqts-capture-error-queue-${self:provider.stage}.fifo
         MessageRetentionPeriod: 1209600
         FifoQueue: true
-        DelaySeconds: 90
+        DelaySeconds: 300
 
 plugins:
   - serverless-plugin-git-variables
