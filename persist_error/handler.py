@@ -2,7 +2,7 @@ import json
 import os
 import logging
 
-from .sfn import get_execution_history, find_root_failure_state
+from .sfn import get_execution_history, get_state_machine_input, find_root_failure_state
 from .sns import send_notification
 from .sqs import send_message
 
@@ -28,6 +28,7 @@ def lambda_handler(event, context):
     logger.info(f'Execution History: {exec_history}')
 
     try:
+        initial_input = get_state_machine_input(exec_history)
         failure_state = find_root_failure_state(exec_history)
     except:
         error_handler_msg = (
@@ -37,12 +38,17 @@ def lambda_handler(event, context):
         send_notification(sns_arn, error_handler_msg)
         return  # drop out of the function
     else:
+        logger.info(f'Initial input: {initial_input}')
         logger.info(f'Failure state: {failure_state}')
 
     try:
-        failure_state['stepFunctionFails'] += 1  # increment number of failures
+        if initial_input['resumeState'] == failure_state['resumeState']:
+            failure_state['stepFunctionFails'] += 1  # increment number of failures
+        else:
+            failure_state['stepFunctionFails'] = 1  # reset if failing on a different state than before
     except KeyError:
         failure_state['stepFunctionFails'] = 1  # start incrementing failures if this is first one
+
     logger.info(f'Incremented failure state: {failure_state}')
 
     if failure_state['stepFunctionFails'] <= max_retries:
@@ -58,7 +64,7 @@ def lambda_handler(event, context):
         # send a message to SNS for human to deal with it
         failure_message = (
             f'Step function execution {execution_arn} has terminally failed. '
-            f'This input has caused {max_retries} failures: {failure_state}.\n'
+            f'This input has caused {max_retries + 1} failures: {failure_state}.\n'
             f'Please take a closer look at the underlying records and data.'
         )
         resp = send_notification(sns_arn, failure_message)

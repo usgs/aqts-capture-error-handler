@@ -75,7 +75,7 @@ class TestLambdaHandler(TestCase):
                     'id': 1,
                     'previousEventId': 0,
                     'type': 'ExecutionStated',
-                    'executionStatedEventDetails': {'input': '{"value": 3}'}
+                    'executionStatedEventDetails': {'input': '{"value": 3, "resumeState": "someState"}'}
                 },
                 {
                     'timestamp': datetime(2375, 5, 6, 17, 21, 5),
@@ -106,6 +106,65 @@ class TestLambdaHandler(TestCase):
                         'input': '{"value": "3"}'
                     }
                 }
+            ]
+        }
+        self.different_state_fail_execution_history = {
+            'events': [
+                {
+                    'timestamp': datetime(2375, 5, 6, 17, 20, 33),
+                    'id': 1,
+                    'previousEventId': 0,
+                    'type': 'ExecutionStated',
+                    'executionStatedEventDetails': {'input': '{"value": 3, "resumeState": "someState"}'}
+                },
+                {
+                    'timestamp': datetime(2375, 5, 6, 17, 21, 5),
+                    'id': 2,
+                    'previousEventId': 1,
+                    'type': 'TaskStateEntered',
+                    'stateEnteredEventDetails': {
+                        'name': 'someState',
+                        'input': '{"value": 3, "stepFunctionFails": 6}'
+                    }
+                },
+                {
+                    'timestamp': datetime(2375, 5, 6, 17, 21, 17),
+                    'id': 3,
+                    'previousEventId': 2,
+                    'type': 'LambdaFunctionSucceeded',
+                    'stateExitedEventDetails': {
+                        'output': '{"value": "17"}'
+                    }
+                },
+                {
+                    'timestamp': datetime(2375, 5, 6, 17, 21, 17),
+                    'id': 4,
+                    'previousEventId': 3,
+                    'type': 'TaskStateEntered',
+                    'stateEnteredEventDetails': {
+                        'name': 'someOtherState',
+                        'input': '{"value": "3"}'
+                    }
+                },
+                {
+                    'timestamp': datetime(2375, 5, 6, 17, 21, 17),
+                    'id': 5,
+                    'previousEventId': 4,
+                    'type': 'LambdaFunctionFailed',
+                    'lambdaFunctionFailedEventDetails': {
+                        'cause': '{"errorMessage": "ValueError"}'
+                    }
+                },
+                {
+                    'timestamp': datetime(2375, 5, 6, 17, 21, 17),
+                    'id': 6,
+                    'previousEventId': 5,
+                    'type': 'TaskStateEntered',
+                    'stateEnteredEventDetails': {
+                        'name': 'someOtherState',
+                        'input': '{"value": "4"}'
+                    }
+                },
             ]
         }
 
@@ -140,11 +199,22 @@ class TestLambdaHandler(TestCase):
         mock_sn.assert_called_with(
             self.sns_arn,
             (f"Step function execution {self.fail_execution_arn} has terminally failed. "
-             f"This input has caused {self.max_retries} failures:"
+             f"This input has caused {self.max_retries + 1} failures:"
              f" {{'value': 3, 'stepFunctionFails': {self.max_retries + 1}, 'resumeState': 'someState'}}.\n"
              "Please take a closer look at the underlying records and data.")
         )
         mock_sm.assert_not_called()
+
+    @mock.patch.dict('persist_error.handler.os.environ', mock_env_vars)
+    @mock.patch('persist_error.handler.send_message', autospec=True)
+    @mock.patch('persist_error.handler.send_notification', autospec=True)
+    @mock.patch('persist_error.handler.get_execution_history', autospec=True)
+    def test_failure_count_reset(self, mock_eh, mock_sn, mock_sm):
+        mock_eh.return_value = self.different_state_fail_execution_history
+        lambda_handler(self.excessive_fail_event, self.context)
+        mock_eh.assert_called_once()
+        mock_sn.assert_not_called()
+        mock_sm.assert_called_once()
 
     @mock.patch.dict('persist_error.handler.os.environ', mock_env_vars)
     @mock.patch('persist_error.handler.send_message', autospec=True)
