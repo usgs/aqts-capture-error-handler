@@ -56,7 +56,7 @@ def backtrack_to_failure(execution_history):
     error_found = False
     event_ids = [event['id'] for event in execution_history['events']]
     max_id = max(event_ids)  # find the event with highest ID to get the most recent
-    # this will always be an event where the errorHandler is entered
+    # there will always be an event where the errorHandler is entered that follows the failure
     event = search_dictionary_list(execution_history['events'], 'id', max_id)[0]
     while error_found is False:
         previous_event_id = event['previousEventId']
