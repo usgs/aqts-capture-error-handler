@@ -30,7 +30,8 @@ def lambda_handler(event, context):
     try:
         initial_input = get_state_machine_input(exec_history)
         failure_state = find_root_failure_state(exec_history)
-    except:
+    except Exception as e:
+        logger.info(f'State parsing error: {repr(e)}', exc_info=True)
         error_handler_msg = (
             f'Human intervention required for execution {execution_arn}. '
             'Unable to figure out what went wrong with this execution.'
