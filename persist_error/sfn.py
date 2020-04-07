@@ -56,6 +56,7 @@ def backtrack_to_failure(execution_history):
     error_found = False
     event_ids = [event['id'] for event in execution_history['events']]
     max_id = max(event_ids)  # find the event with highest ID to get the most recent
+    # there will always be an event where the errorHandler is entered that follows the failure
     event = search_dictionary_list(execution_history['events'], 'id', max_id)[0]
     while error_found is False:
         previous_event_id = event['previousEventId']
@@ -67,12 +68,26 @@ def backtrack_to_failure(execution_history):
     return event
 
 
+def get_state_machine_input(execution_history):
+    """
+    Grab the state machine input from the history.
+
+    :param dict execution_history: dictionary containing the `events` key with a list of dictionaries
+    :return: original state machine input that started the execution
+    :rtype: dict
+
+    """
+    execution_start_details = search_dictionary_list(execution_history['events'], 'id', 1)[0]
+    execution_start_input = json.loads(execution_start_details['executionStatedEventDetails']['input'])
+    return execution_start_input
+
+
 def find_root_failure_state(execution_history):
     """
     Get the original input that caused a state to fail
     and the name of the state.
 
-    :param dict execution_history: dictionary containing the `events` key with a list value
+    :param dict execution_history: dictionary containing the `events` key with a list of dictionaries
     :return: original input with an extra `resumeState` key for the state name
     :rtype: dict
 

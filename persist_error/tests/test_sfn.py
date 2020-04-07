@@ -5,7 +5,7 @@ Module for testing functions interacting with the step functions API.
 from datetime import datetime
 from unittest import TestCase, mock
 
-from ..sfn import get_execution_history, backtrack_to_failure, find_root_failure_state
+from ..sfn import get_execution_history, backtrack_to_failure, get_state_machine_input, find_root_failure_state
 
 
 class TestGetExecutionHistory(TestCase):
@@ -169,6 +169,56 @@ class TestBacktrackToFailure(TestCase):
         self.assertDictEqual(
             result, self.execution_history_timeout['events'][2]
         )
+
+
+class TestGetStateMachineInput(TestCase):
+
+    def setUp(self):
+        self.execution_history = {
+            'events': [
+                {
+                    'timestamp': datetime(2375, 5, 6, 17, 20, 33),
+                    'id': 1,
+                    'previousEventId': 0,
+                    'type': 'ExecutionStated',
+                    'executionStatedEventDetails': {'input': '{"value": 3}'}
+                },
+                {
+                    'timestamp': datetime(2375, 5, 6, 17, 21, 5),
+                    'id': 2,
+                    'previousEventId': 1,
+                    'type': 'TaskStateEntered',
+                    'stateEnteredEventDetails': {
+                        'name': 'someState',
+                        'input': '{"value": "3"}'
+                    }
+                },
+                {
+                    'timestamp': datetime(2375, 5, 6, 17, 21, 17),
+                    'id': 3,
+                    'previousEventId': 2,
+                    'type': 'LambdaFunctionFailed',
+                    'lambdaFunctionFailedEventDetails': {
+                        'cause': '{"errorMessage": "ValueError"}'
+                    }
+                },
+                {
+                    'timestamp': datetime(2375, 5, 6, 17, 21, 17),
+                    'id': 4,
+                    'previousEventId': 3,
+                    'type': 'TaskStateEntered',
+                    'stateEnteredEventDetails': {
+                        'name': 'someOtherState',
+                        'input': '{"value": "3"}'
+                    }
+                }
+            ]
+        }
+
+    def test_get_input(self):
+        input = get_state_machine_input(self.execution_history)
+        expected = {'value': 3}
+        self.assertDictEqual(input, expected)
 
 
 class TestFindRootFailure(TestCase):
