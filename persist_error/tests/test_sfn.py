@@ -181,7 +181,7 @@ class TestGetStateMachineInput(TestCase):
                     'id': 1,
                     'previousEventId': 0,
                     'type': 'ExecutionStated',
-                    'executionStatedEventDetails': {'input': '{"value": 3}'}
+                    'executionStartedEventDetails': {'input': '{"value": 3}'}
                 },
                 {
                     'timestamp': datetime(2375, 5, 6, 17, 21, 5),
@@ -231,7 +231,7 @@ class TestFindRootFailure(TestCase):
                     'id': 1,
                     'previousEventId': 0,
                     'type': 'ExecutionStated',
-                    'executionStatedEventDetails': {'input': '{"value": 3}'}
+                    'executionStartedEventDetails': {'input': '{"value": 3}'}
                 },
                 {
                     'timestamp': datetime(2375, 5, 6, 17, 21, 5),

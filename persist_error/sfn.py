@@ -78,7 +78,7 @@ def get_state_machine_input(execution_history):
 
     """
     execution_start_details = search_dictionary_list(execution_history['events'], 'id', 1)[0]
-    execution_start_input = json.loads(execution_start_details['executionStatedEventDetails']['input'])
+    execution_start_input = json.loads(execution_start_details['executionStartedEventDetails']['input'])
     return execution_start_input
 
 
