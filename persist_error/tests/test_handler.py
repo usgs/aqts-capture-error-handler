@@ -84,7 +84,7 @@ class TestLambdaHandler(TestCase):
                     'type': 'TaskStateEntered',
                     'stateEnteredEventDetails': {
                         'name': 'someState',
-                        'input': '{"value": 3, "stepFunctionFails": 6}'
+                        'input': f'{{"value": 3, "stepFunctionFails": 6, "previousExecutions": ["{self.initial_execution_arn}"]}}'
                     }
                 },
                 {
@@ -179,7 +179,8 @@ class TestLambdaHandler(TestCase):
         expected_result = {
             'value': '3',
             'resumeState': 'someState',
-            'stepFunctionFails': 1
+            'stepFunctionFails': 1,
+            'previousExecutions': [self.initial_execution_arn]
         }
         self.assertDictEqual(result, expected_result)
         mock_sm.assert_called_with(
@@ -200,7 +201,7 @@ class TestLambdaHandler(TestCase):
             self.sns_arn,
             (f"Step function execution {self.fail_execution_arn} has terminally failed. "
              f"This input has caused {self.max_retries + 1} failures:"
-             f" {{'value': 3, 'stepFunctionFails': {self.max_retries + 1}, 'resumeState': 'someState'}}.\n"
+             f" {{'value': 3, 'stepFunctionFails': {self.max_retries + 1}, 'previousExecutions': ['{self.initial_execution_arn}', '{self.fail_execution_arn}'], 'resumeState': 'someState'}}.\n"
              "Please take a closer look at the underlying records and data.")
         )
         mock_sm.assert_not_called()

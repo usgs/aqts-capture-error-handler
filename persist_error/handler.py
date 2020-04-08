@@ -50,6 +50,11 @@ def lambda_handler(event, context):
     except KeyError:
         failure_state['stepFunctionFails'] = 1  # start incrementing failures if this is first one
 
+    try:
+        failure_state['previousExecutions'].append(execution_arn)
+    except KeyError:
+        failure_state['previousExecutions'] = [execution_arn]
+
     logger.info(f'Incremented failure state: {failure_state}')
 
     if failure_state['stepFunctionFails'] <= max_retries:
