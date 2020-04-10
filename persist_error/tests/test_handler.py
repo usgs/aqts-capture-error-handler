@@ -6,6 +6,8 @@ from datetime import datetime
 import json
 from unittest import TestCase, mock
 
+from botocore.exceptions import ClientError
+
 from ..handler import lambda_handler
 
 
@@ -25,8 +27,18 @@ class TestLambdaHandler(TestCase):
     def setUp(self):
         self.initial_execution_arn = 'arn:aws:states:us-south-10:98877654311:blah:a17h83j-p84321'
         self.fail_execution_arn = 'arn:aws:states:us-south-10:98877654311:blah:i3m556d-b5903fe'
-        self.initial_event = {'executionArn': self.initial_execution_arn}
-        self.excessive_fail_event = {'executionArn': self.fail_execution_arn}
+        self.state_machine_start_input = {'Record': {'eventVersion': '2.1', 'eventSource': 'aws:s3'}}
+        self.excessive_start_input = {
+            'Record': {'value': '3'},
+            'resumeState': 'someState',
+            'previousExecutions': [{self.initial_execution_arn}],
+            'stepFunctionFails': 6
+        }
+        self.initial_event = {'executionArn': self.initial_execution_arn, 'startInput': self.state_machine_start_input}
+        self.excessive_fail_event = {
+            'executionArn': self.fail_execution_arn,
+            'startInput': self.excessive_start_input
+        }
         self.context = {'element': 'lithium'}
         self.initial_execution_history = {
             'events': [
@@ -233,4 +245,20 @@ class TestLambdaHandler(TestCase):
              'Unable to figure out what went wrong with this execution.')
         )
         mock_sm.assert_not_called()
+
+    @mock.patch.dict('persist_error.handler.os.environ', mock_env_vars)
+    @mock.patch('persist_error.handler.send_message', autospec=True)
+    @mock.patch('persist_error.handler.get_execution_history', autospec=True)
+    def test_api_client_error(self, mock_eh, mock_sm):
+        mock_eh.side_effect = ClientError(
+            error_response={'Error': {'Code': 'SomeCode'}},
+            operation_name='MyOperation'
+        )
+        lambda_handler(self.initial_event, self.context)
+        mock_eh.assert_called_once()
+        mock_sm.assert_called_with(
+            queue_url=self.queue_url,
+            message_body=json.dumps(self.state_machine_start_input),
+            region=self.region
+        )
 

@@ -68,20 +68,6 @@ def backtrack_to_failure(execution_history):
     return event
 
 
-def get_state_machine_input(execution_history):
-    """
-    Grab the state machine input from the history.
-
-    :param dict execution_history: dictionary containing the `events` key with a list of dictionaries
-    :return: original state machine input that started the execution
-    :rtype: dict
-
-    """
-    execution_start_details = search_dictionary_list(execution_history['events'], 'id', 1)[0]
-    execution_start_input = json.loads(execution_start_details['executionStartedEventDetails']['input'])
-    return execution_start_input
-
-
 def find_root_failure_state(execution_history):
     """
     Get the original input that caused a state to fail
