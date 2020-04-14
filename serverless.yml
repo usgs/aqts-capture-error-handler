@@ -29,6 +29,8 @@ functions:
   aqtsErrorHandler:
     handler: persist_error.handler.lambda_handler
     role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
+    onError:
+      Ref: snsTopic
     environment:
       AWS_SQS_QUEUE_URL:
         Ref: errorPersistQueue
