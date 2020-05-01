@@ -37,7 +37,7 @@ functions:
       AWS_SNS_ARN:
         Ref: snsTopic
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
-      MAX_RETRIES: 3
+      MAX_RETRIES: 4
     vpc: ${self:custom.vpc}
 
 resources:
