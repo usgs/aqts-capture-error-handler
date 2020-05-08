@@ -89,7 +89,7 @@ def lambda_handler(event, context):
         # send a message to SNS for human to deal with it
         failure_message = (
             f'Step function execution {execution_arn} has terminally failed. '
-            f'This input has caused {max_retries + 1} failures: {failure_state}.\n'
+            f'This input has exceeded {max_retries} failures for an individual state: {failure_state}.\n'
             f'Please take a closer look at the underlying records and data.'
         )
         resp = send_notification(sns_arn, failure_message)
