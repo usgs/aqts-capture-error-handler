@@ -49,11 +49,12 @@ def lambda_handler(event, context):
         failure_state = find_root_failure_state(exec_history)
     except Exception as e:
         logger.info(f'State parsing error: {repr(e)}', exc_info=True)
+        subject = 'Well that could have gone better...'
         error_handler_msg = (
             f'Human intervention required for execution {execution_arn}. '
             'Unable to figure out what went wrong with this execution.'
         )
-        send_notification(sns_arn, error_handler_msg)
+        send_notification(sns_arn, error_handler_msg, subject)
         return  # drop out of the function
     else:
         logger.info(f'Failure state: {failure_state}')
@@ -87,11 +88,12 @@ def lambda_handler(event, context):
     else:
         # abort retry attempts if there more failures than the set condition
         # send a message to SNS for human to deal with it
+        subject = 'Excessive Capture Failures Reported'
         failure_message = (
             f'Step function execution {execution_arn} has terminally failed. '
             f'This input has exceeded {max_retries} failures for an individual state: {failure_state}.\n'
             f'Please take a closer look at the underlying records and data.'
         )
-        resp = send_notification(sns_arn, failure_message)
+        resp = send_notification(sns_arn, failure_message, subject_line=subject,)
         logger.info(f'Input failed more than {max_retries} times: {failure_state}. Notification sent to SNS: {resp}.')
     return failure_state
