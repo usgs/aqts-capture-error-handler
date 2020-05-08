@@ -212,7 +212,7 @@ class TestLambdaHandler(TestCase):
         mock_sn.assert_called_with(
             self.sns_arn,
             (f"Step function execution {self.fail_execution_arn} has terminally failed. "
-             f"This input has caused {self.max_retries + 1} failures:"
+             f"This input has exceeded {self.max_retries} failures for an individual state:"
              f" {{'value': 3, 'stepFunctionFails': {self.max_retries + 1}, 'previousExecutions': ['{self.initial_execution_arn}', '{self.fail_execution_arn}'], 'resumeState': 'someState'}}.\n"
              "Please take a closer look at the underlying records and data.")
         )
