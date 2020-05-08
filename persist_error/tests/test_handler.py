@@ -214,7 +214,8 @@ class TestLambdaHandler(TestCase):
             (f"Step function execution {self.fail_execution_arn} has terminally failed. "
              f"This input has exceeded {self.max_retries} failures for an individual state:"
              f" {{'value': 3, 'stepFunctionFails': {self.max_retries + 1}, 'previousExecutions': ['{self.initial_execution_arn}', '{self.fail_execution_arn}'], 'resumeState': 'someState'}}.\n"
-             "Please take a closer look at the underlying records and data.")
+             "Please take a closer look at the underlying records and data."),
+            subject_line='Excessive Capture Failures Reported'
         )
         mock_sm.assert_not_called()
 
@@ -242,7 +243,8 @@ class TestLambdaHandler(TestCase):
         mock_sn.assert_called_with(
             self.sns_arn,
             (f'Human intervention required for execution {self.initial_execution_arn}. '
-             'Unable to figure out what went wrong with this execution.')
+             'Unable to figure out what went wrong with this execution.'),
+            'Well that could have gone better...'
         )
         mock_sm.assert_not_called()
 
