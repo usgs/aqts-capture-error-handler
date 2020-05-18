@@ -47,7 +47,7 @@ def lambda_handler(event, context):
         subject = 'Excessive Capture Failures Reported'
         failure_message = (
             f'Step function execution {execution_arn} has terminally failed. '
-            f'This input has exceeded {max_retries} failures for an individual state: {input}.\n'
+            f'This input has exceeded {max_retries} failures: {initial_input}.\n'
             f'Please take a closer look at the underlying records and data.'
         )
         resp = send_notification(sns_arn, failure_message, subject_line=subject,)
