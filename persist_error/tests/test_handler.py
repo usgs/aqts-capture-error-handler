@@ -6,8 +6,6 @@ from datetime import datetime
 import json
 from unittest import TestCase, mock
 
-from botocore.exceptions import ClientError
-
 from ..handler import lambda_handler
 
 
@@ -26,241 +24,87 @@ class TestLambdaHandler(TestCase):
 
     def setUp(self):
         self.initial_execution_arn = 'arn:aws:states:us-south-10:98877654311:blah:a17h83j-p84321'
-        self.fail_execution_arn = 'arn:aws:states:us-south-10:98877654311:blah:i3m556d-b5903fe'
-        self.state_machine_start_input = {'Record': {'eventVersion': '2.1', 'eventSource': 'aws:s3'}}
-        self.excessive_start_input = {
-            'Record': {'value': '3'},
-            'resumeState': 'someState',
-            'previousExecutions': [{self.initial_execution_arn}],
-            'stepFunctionFails': 6
-        }
-        self.initial_event = {'executionArn': self.initial_execution_arn, 'startInput': self.state_machine_start_input}
-        self.excessive_fail_event = {
-            'executionArn': self.fail_execution_arn,
-            'startInput': self.excessive_start_input
-        }
-        self.context = {'element': 'lithium'}
-        self.initial_execution_history = {
-            'events': [
-                {
-                    'timestamp': datetime(2379, 5, 6, 17, 20, 33),
-                    'id': 1,
-                    'previousEventId': 0,
-                    'type': 'ExecutionStated',
-                    'executionStartedEventDetails': {'input': '{"value": 3}'}
-                },
-                {
-                    'timestamp': datetime(2379, 5, 6, 17, 21, 5),
-                    'id': 2,
-                    'previousEventId': 1,
-                    'type': 'TaskStateEntered',
-                    'stateEnteredEventDetails': {
-                        'name': 'someState',
-                        'input': '{"value": "3"}'
-                    }
-                },
-                {
-                    'timestamp': datetime(2379, 5, 6, 17, 21, 17),
-                    'id': 3,
-                    'previousEventId': 2,
-                    'type': 'LambdaFunctionFailed',
-                    'lambdaFunctionFailedEventDetails': {
-                        'cause': '{"errorMessage": "ValueError"}'
-                    }
-                },
-                {
-                    'timestamp': datetime(2379, 5, 6, 17, 21, 17),
-                    'id': 4,
-                    'previousEventId': 3,
-                    'type': 'TaskStateEntered',
-                    'stateEnteredEventDetails': {
-                        'name': 'someOtherState',
-                        'input': '{"value": "3"}'
-                    }
-                }
-            ]
-        }
-        self.excessive_fail_execution_history = {
-            'events': [
-                {
-                    'timestamp': datetime(2375, 5, 6, 17, 20, 33),
-                    'id': 1,
-                    'previousEventId': 0,
-                    'type': 'ExecutionStated',
-                    'executionStartedEventDetails': {'input': '{"value": 3, "resumeState": "someState"}'}
-                },
-                {
-                    'timestamp': datetime(2375, 5, 6, 17, 21, 5),
-                    'id': 2,
-                    'previousEventId': 1,
-                    'type': 'TaskStateEntered',
-                    'stateEnteredEventDetails': {
-                        'name': 'someState',
-                        'input': f'{{"value": 3, "stepFunctionFails": 6, "previousExecutions": ["{self.initial_execution_arn}"]}}'
-                    }
-                },
-                {
-                    'timestamp': datetime(2375, 5, 6, 17, 21, 17),
-                    'id': 3,
-                    'previousEventId': 2,
-                    'type': 'LambdaFunctionFailed',
-                    'lambdaFunctionFailedEventDetails': {
-                        'cause': '{"errorMessage": "ValueError"}'
-                    }
-                },
-                {
-                    'timestamp': datetime(2375, 5, 6, 17, 21, 17),
-                    'id': 4,
-                    'previousEventId': 3,
-                    'type': 'TaskStateEntered',
-                    'stateEnteredEventDetails': {
-                        'name': 'someOtherState',
-                        'input': '{"value": "3"}'
-                    }
-                }
-            ]
-        }
-        self.different_state_fail_execution_history = {
-            'events': [
-                {
-                    'timestamp': datetime(2375, 5, 6, 17, 20, 33),
-                    'id': 1,
-                    'previousEventId': 0,
-                    'type': 'ExecutionStated',
-                    'executionStartedEventDetails': {'input': '{"value": 3, "resumeState": "someState"}'}
-                },
-                {
-                    'timestamp': datetime(2375, 5, 6, 17, 21, 5),
-                    'id': 2,
-                    'previousEventId': 1,
-                    'type': 'TaskStateEntered',
-                    'stateEnteredEventDetails': {
-                        'name': 'someState',
-                        'input': '{"value": 3, "stepFunctionFails": 6}'
-                    }
-                },
-                {
-                    'timestamp': datetime(2375, 5, 6, 17, 21, 17),
-                    'id': 3,
-                    'previousEventId': 2,
-                    'type': 'LambdaFunctionSucceeded',
-                    'stateExitedEventDetails': {
-                        'output': '{"value": "17"}'
-                    }
-                },
-                {
-                    'timestamp': datetime(2375, 5, 6, 17, 21, 17),
-                    'id': 4,
-                    'previousEventId': 3,
-                    'type': 'TaskStateEntered',
-                    'stateEnteredEventDetails': {
-                        'name': 'someOtherState',
-                        'input': '{"value": "3"}'
-                    }
-                },
-                {
-                    'timestamp': datetime(2375, 5, 6, 17, 21, 17),
-                    'id': 5,
-                    'previousEventId': 4,
-                    'type': 'LambdaFunctionFailed',
-                    'lambdaFunctionFailedEventDetails': {
-                        'cause': '{"errorMessage": "ValueError"}'
-                    }
-                },
-                {
-                    'timestamp': datetime(2375, 5, 6, 17, 21, 17),
-                    'id': 6,
-                    'previousEventId': 5,
-                    'type': 'TaskStateEntered',
-                    'stateEnteredEventDetails': {
-                        'name': 'someOtherState',
-                        'input': '{"value": "4"}'
-                    }
-                },
-            ]
-        }
+        self.subsequent_execution_arn = 'arn:aws:states:us-south-10:98877654311:blah:ab423cf-7753ae'
+        self.terminal_fail_execution_arn = 'arn:aws:states:us-south-10:98877654311:blah:i3m556d-b5903fe'
 
-    @mock.patch.dict('persist_error.handler.os.environ', mock_env_vars)
-    @mock.patch('persist_error.handler.send_message', autospec=True)
-    @mock.patch('persist_error.handler.get_execution_history', autospec=True)
-    def test_basic_event_handling(self, mock_eh, mock_sm):
-        mock_eh.return_value = self.initial_execution_history
-        result = lambda_handler(self.initial_event, self.context)
-
-        mock_eh.assert_called_once()
-        expected_result = {
-            'value': '3',
-            'resumeState': 'someState',
+        self.state_machine_start_input = {
+            'Record': {'eventVersion': '2.1', 'eventSource': 'aws:s3'}
+        }
+        self.subsequent_start_input = {
+            'Record': {'eventVersion': '2.1', 'eventSource': 'aws:s3'},
             'stepFunctionFails': 1,
             'previousExecutions': [self.initial_execution_arn]
         }
-        self.assertDictEqual(result, expected_result)
+        self.terminal_fail_start_input = {
+            'Record': {'eventVersion': '2.1', 'eventSource': 'aws:s3'},
+            'previousExecutions': [self.initial_execution_arn, self.subsequent_execution_arn],
+            'stepFunctionFails': 6
+        }
+
+        self.initial_event = {'executionArn': self.initial_execution_arn, 'startInput': self.state_machine_start_input}
+        self.subsequent_event = {
+            'executionArn': self.subsequent_execution_arn,
+            'startInput': self.subsequent_start_input
+        }
+        self.terminal_fail_event = {
+            'executionArn': self.terminal_fail_execution_arn,
+            'startInput': self.terminal_fail_start_input
+        }
+
+        self.context = {'element': 'lithium'}
+
+    @mock.patch.dict('persist_error.handler.os.environ', mock_env_vars)
+    @mock.patch('persist_error.handler.send_message', autospec=True)
+    def test_retry_message_sent(self, mock_sm):
+        lambda_handler(self.initial_event, self.context)
+        expected_message_body = {
+            'Record': {'eventVersion': '2.1', 'eventSource': 'aws:s3'},
+            'stepFunctionFails': 1,
+            'previousExecutions': [self.initial_execution_arn]
+        }
         mock_sm.assert_called_with(
             queue_url=self.queue_url,
-            message_body=json.dumps(expected_result),
+            message_body=json.dumps(expected_message_body),
+            region=self.region
+        )
+
+    @mock.patch.dict('persist_error.handler.os.environ', mock_env_vars)
+    @mock.patch('persist_error.handler.send_message', autospec=True)
+    def test_subsequent_retry_increment(self, mock_sm):
+        lambda_handler(self.subsequent_event, self.context)
+        expected_message_body = {
+            'Record': {'eventVersion': '2.1', 'eventSource': 'aws:s3'},
+            'stepFunctionFails': 2,
+            'previousExecutions': [self.initial_execution_arn, self.subsequent_execution_arn]
+        }
+        mock_sm.assert_called_with(
+            queue_url=self.queue_url,
+            message_body=json.dumps(expected_message_body),
             region=self.region
         )
 
     @mock.patch.dict('persist_error.handler.os.environ', mock_env_vars)
     @mock.patch('persist_error.handler.send_message', autospec=True)
     @mock.patch('persist_error.handler.send_notification', autospec=True)
-    @mock.patch('persist_error.handler.get_execution_history', autospec=True)
-    def test_excessive_failures(self, mock_eh, mock_sn, mock_sm):
-        mock_eh.return_value = self.excessive_fail_execution_history
-        lambda_handler(self.excessive_fail_event, self.context)
-        mock_eh.assert_called_once()
+    def test_terminal_failure_behavior(self, mock_sn, mock_sm):
+        lambda_handler(self.terminal_fail_event, self.context)
+        expected_output = {
+            'Record': {'eventVersion': '2.1', 'eventSource': 'aws:s3'},
+            'previousExecutions': [
+                self.initial_execution_arn,
+                self.subsequent_execution_arn,
+                self.terminal_fail_execution_arn
+            ],
+            'stepFunctionFails': 7
+        }
+        expected_notification_message_body = (
+            f'Step function execution {self.terminal_fail_execution_arn} has terminally failed. '
+            f'This input has exceeded {self.max_retries} failures: {expected_output}.\n'
+            f'Please take a closer look at the underlying records and data.'
+        )
+        mock_sm.assert_not_called()
         mock_sn.assert_called_with(
             self.sns_arn,
-            (f"Step function execution {self.fail_execution_arn} has terminally failed. "
-             f"This input has exceeded {self.max_retries} failures for an individual state:"
-             f" {{'value': 3, 'stepFunctionFails': {self.max_retries + 1}, 'previousExecutions': ['{self.initial_execution_arn}', '{self.fail_execution_arn}'], 'resumeState': 'someState'}}.\n"
-             "Please take a closer look at the underlying records and data."),
+            expected_notification_message_body,
             subject_line='Excessive Capture Failures Reported'
         )
-        mock_sm.assert_not_called()
-
-    @mock.patch.dict('persist_error.handler.os.environ', mock_env_vars)
-    @mock.patch('persist_error.handler.send_message', autospec=True)
-    @mock.patch('persist_error.handler.send_notification', autospec=True)
-    @mock.patch('persist_error.handler.get_execution_history', autospec=True)
-    def test_failure_count_reset(self, mock_eh, mock_sn, mock_sm):
-        mock_eh.return_value = self.different_state_fail_execution_history
-        lambda_handler(self.excessive_fail_event, self.context)
-        mock_eh.assert_called_once()
-        mock_sn.assert_not_called()
-        mock_sm.assert_called_once()
-
-    @mock.patch.dict('persist_error.handler.os.environ', mock_env_vars)
-    @mock.patch('persist_error.handler.send_message', autospec=True)
-    @mock.patch('persist_error.handler.send_notification', autospec=True)
-    @mock.patch('persist_error.handler.get_execution_history', autospec=True)
-    @mock.patch('persist_error.handler.find_root_failure_state', autospec=True)
-    def test_failure_trace_exception(self, mock_frfs, mock_eh, mock_sn, mock_sm):
-        mock_frfs.side_effect = ValueError
-        mock_eh.return_value = self.initial_execution_history
-        lambda_handler(self.initial_event, self.context)
-        mock_eh.assert_called_once()
-        mock_sn.assert_called_with(
-            self.sns_arn,
-            (f'Human intervention required for execution {self.initial_execution_arn}. '
-             'Unable to figure out what went wrong with this execution.'),
-            'Well that could have gone better...'
-        )
-        mock_sm.assert_not_called()
-
-    @mock.patch.dict('persist_error.handler.os.environ', mock_env_vars)
-    @mock.patch('persist_error.handler.send_message', autospec=True)
-    @mock.patch('persist_error.handler.get_execution_history', autospec=True)
-    def test_api_client_error(self, mock_eh, mock_sm):
-        mock_eh.side_effect = ClientError(
-            error_response={'Error': {'Code': 'SomeCode'}},
-            operation_name='MyOperation'
-        )
-        lambda_handler(self.initial_event, self.context)
-        mock_eh.assert_called_once()
-        mock_sm.assert_called_with(
-            queue_url=self.queue_url,
-            message_body=json.dumps(self.state_machine_start_input),
-            region=self.region
-        )
-
