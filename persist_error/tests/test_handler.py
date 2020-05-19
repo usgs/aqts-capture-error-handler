@@ -2,7 +2,6 @@
 Tests for the AWS Lambda handler.
 
 """
-from datetime import datetime
 import json
 from unittest import TestCase, mock
 
