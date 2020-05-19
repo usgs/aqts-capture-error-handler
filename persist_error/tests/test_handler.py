@@ -99,7 +99,7 @@ class TestLambdaHandler(TestCase):
         }
         expected_notification_message_body = (
             f'Step function execution {self.terminal_fail_execution_arn} has terminally failed. '
-            f'This input has exceeded {self.max_retries} failures: {expected_output}.\n'
+            f'This input has exceeded {self.max_retries} failures: {json.dumps(expected_output)}.\n'
             f'Please take a closer look at the underlying records and data.'
         )
         mock_sm.assert_not_called()
