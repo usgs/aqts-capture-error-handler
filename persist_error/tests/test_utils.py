@@ -2,9 +2,9 @@
 Tests for utility functions.
 
 """
-from unittest import TestCase
+from unittest import TestCase, mock
 
-from ..utils import search_dictionary_list
+from ..utils import search_dictionary_list, select_delay_seconds
 
 
 class TestSearchDictionaryList(TestCase):
@@ -24,3 +24,15 @@ class TestSearchDictionaryList(TestCase):
     def test_multiple_match(self):
         result = search_dictionary_list(self.dict_list, 'value', 'mango')
         self.assertListEqual(result, [self.dict_list[0], self.dict_list[-1]])
+
+
+class TestSelectDelaySeconds(TestCase):
+
+    def setUp(self):
+        self.low = 20
+        self.high = 40
+
+    @mock.patch('persist_error.utils.np.random', autospec=True)
+    def test_delay_seconds_np_call(self, mock_np_rd):
+        select_delay_seconds(low=self.low, high=self.high)
+        mock_np_rd.randint.assert_called_with(self.low, self.high+1)

@@ -2,6 +2,7 @@
 Utility functions.
 
 """
+import numpy as np
 
 
 def search_dictionary_list(dict_list, search_key, search_value):
@@ -17,3 +18,15 @@ def search_dictionary_list(dict_list, search_key, search_value):
     """
     result = list(filter(lambda x: x[search_key] == search_value, dict_list))
     return result
+
+
+def select_delay_seconds(low=300, high=900):
+    """
+    Randomly select message delay seconds within the
+    given interval.
+
+    :param int low: inclusive lower bound
+    :param int high: inclusive upper bound
+
+    """
+    return np.random.randint(low, high+1)

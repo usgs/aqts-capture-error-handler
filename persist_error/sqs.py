@@ -6,10 +6,12 @@ import uuid
 
 import boto3
 
+from .utils import select_delay_seconds
 
-def send_message(queue_url, message_body, message_grp_id='step_function_error', region='us-west-2'):
+
+def send_message(queue_url, message_body, region='us-west-2'):
     """
-    Send a message to an SQS FIFO queue.
+    Send a message to an SQS standard queue.
 
     :param str queue_url: http url of the SQS queue
     :param str message_body: the message body
@@ -21,12 +23,9 @@ def send_message(queue_url, message_body, message_grp_id='step_function_error', 
     """
     sqs = boto3.client('sqs', region_name=region)
 
-    deduplication_id = str(uuid.uuid4())
-
     resp = sqs.send_message(
         QueueUrl=queue_url,
         MessageBody=message_body,
-        MessageDeduplicationId=deduplication_id,
-        MessageGroupId=message_grp_id
+        DelaySeconds=select_delay_seconds()
     )
     return resp
