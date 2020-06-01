@@ -23,10 +23,12 @@ def search_dictionary_list(dict_list, search_key, search_value):
 def select_delay_seconds(low=300, high=900):
     """
     Randomly select message delay seconds within the
-    given interval.
+    given interval (inclusive on both bounds).
 
     :param int low: inclusive lower bound
     :param int high: inclusive upper bound
+    :return: random number between the interval
+    :rtype: int
 
     """
     return np.random.randint(low, high+1)
