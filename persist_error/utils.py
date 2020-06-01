@@ -2,7 +2,7 @@
 Utility functions.
 
 """
-import numpy as np
+import random
 
 
 def search_dictionary_list(dict_list, search_key, search_value):
@@ -31,4 +31,4 @@ def select_delay_seconds(low=300, high=900):
     :rtype: int
 
     """
-    return np.random.randint(low, high+1)
+    return random.randint(low, high)

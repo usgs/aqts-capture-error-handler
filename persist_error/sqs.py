@@ -2,8 +2,6 @@
 Module containing functions for persisting inputs that cause failures in for a particular state.
 
 """
-import uuid
-
 import boto3
 
 from .utils import select_delay_seconds

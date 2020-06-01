@@ -32,7 +32,7 @@ class TestSelectDelaySeconds(TestCase):
         self.low = 20
         self.high = 40
 
-    @mock.patch('persist_error.utils.np.random', autospec=True)
-    def test_delay_seconds_np_call(self, mock_np_rd):
+    @mock.patch('persist_error.utils.random', autospec=True)
+    def test_delay_seconds_np_call(self, mock_rd):
         select_delay_seconds(low=self.low, high=self.high)
-        mock_np_rd.randint.assert_called_with(self.low, self.high+1)
+        mock_rd.randint.assert_called_with(self.low, self.high)

@@ -15,10 +15,9 @@ class TestSendMessage(TestCase):
         self.region = 'us-south-10'
         self.delay_seconds = 513
 
-    @mock.patch('persist_error.sqs.uuid', autospec=True)
     @mock.patch('persist_error.sqs.boto3.client', autospec=True)
     @mock.patch('persist_error.sqs.select_delay_seconds', autospec=True)
-    def test_message_send(self, m_sds, m_client, m_uuid):
+    def test_message_send(self, m_sds, m_client):
         mock_sqs = mock.Mock()
         m_client.return_value = mock_sqs
 
