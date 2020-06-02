@@ -86,10 +86,8 @@ resources:
     errorPersistQueue:
       Type: AWS::SQS::Queue
       Properties:
-        QueueName: aqts-capture-error-queue-${self:provider.stage}.fifo
+        QueueName: aqts-capture-error-queue-${self:provider.stage}
         MessageRetentionPeriod: 1209600
-        FifoQueue: true
-        DelaySeconds: 600
 
 plugins:
   - serverless-plugin-git-variables

@@ -2,6 +2,7 @@
 Utility functions.
 
 """
+import random
 
 
 def search_dictionary_list(dict_list, search_key, search_value):
@@ -17,3 +18,17 @@ def search_dictionary_list(dict_list, search_key, search_value):
     """
     result = list(filter(lambda x: x[search_key] == search_value, dict_list))
     return result
+
+
+def select_delay_seconds(low=300, high=900):
+    """
+    Randomly select message delay seconds within the
+    given interval (inclusive on both bounds).
+
+    :param int low: inclusive lower bound; defaults to 300 seconds
+    :param int high: inclusive upper bound; defaults to 900 seconds -- the maximum delay allowed by SQS
+    :return: random number between the interval
+    :rtype: int
+
+    """
+    return random.randint(low, high)
