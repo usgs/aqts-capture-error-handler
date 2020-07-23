@@ -7,7 +7,7 @@ provider:
   runtime: python3.8
   memorySize: 128
   timeout: 45
-  logRetentionInDays: 30
+  logRetentionInDays: 90
   deploymentBucket:
     name: iow-cloud-applications
   stackTags:
