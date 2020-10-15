@@ -16,6 +16,8 @@ provider:
     "wma:environment": ${self:provider.stage}
     "wma:taggingVersion": 0.0.1
     "wma:costCenter": TBD
+    "wma:organization": IOW
+    "displayName": "Error Handler"
     commitIdentifier: ${git:sha1}
 
 custom:
