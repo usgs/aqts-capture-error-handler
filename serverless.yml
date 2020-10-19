@@ -43,6 +43,7 @@ functions:
         Ref: snsTopic
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
       MAX_RETRIES: 6
+      LOG_LEVEL: ERROR
     vpc: ${self:custom.vpc}
 
 resources:
