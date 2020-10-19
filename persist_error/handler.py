@@ -6,8 +6,9 @@ from .sns import send_notification
 from .sqs import send_message
 
 
+log_level = os.getenv('LOG_LEVEL', 'ERROR')
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+logger.setLevel(log_level)
 
 
 def lambda_handler(event, context):
