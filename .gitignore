@@ -1,0 +1,4 @@
+.idea/
+env/
+persist_error/__pycache__/
+persist_error/tests/__pycache__/
