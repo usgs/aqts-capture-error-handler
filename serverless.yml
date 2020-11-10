@@ -32,7 +32,11 @@ custom:
 functions:
   aqtsErrorHandler:
     handler: persist_error.handler.lambda_handler
-    role: arn:aws:iam::#{AWS::AccountId}:role/csr-Lambda-Role
+    role:
+      Fn::Sub:
+        - arn:aws:iam::${accountId}:role/csr-Lambda-Role
+        - accountId:
+            Ref: AWS::AccountId
     onError:
       Ref: snsTopic
     environment:
@@ -96,7 +100,6 @@ resources:
 
 plugins:
   - serverless-plugin-git-variables
-  - serverless-pseudo-parameters
   - serverless-python-requirements
 
 package:
