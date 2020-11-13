@@ -56,6 +56,24 @@ resources:
       Properties:
         DisplayName: ${self:service}-${self:provider.stage}-topic
         TopicName: ${self:service}-${self:provider.stage}-topic
+    invocationAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: ${self:service}-${self:provider.stage}-invocation-alarm
+        AlarmDescription: Notify when invocations exceeds the specified threshold
+        Namespace: 'AWS/Lambda'
+        Dimensions:
+          - Name: FunctionName
+            Value:
+              Ref: AqtsErrorHandlerLambdaFunction
+        MetricName: Invocations
+        Statistic: Sum
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        Threshold: 500
+        Period: 60
+        EvaluationPeriods: 2
+        AlarmActions:
+          - Ref: snsTopic
     concurrencyAlarm:
       Type: AWS::CloudWatch::Alarm
       Properties:
