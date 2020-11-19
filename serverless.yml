@@ -2,6 +2,12 @@ service: aqts-capture-error-handler
 
 provider:
   name: aws
+  rolePermissionsBoundary:
+    Fn::Sub:
+      - "arn:aws:iam::${accountId}:policy/csr-Developer-Permissions-Boundary"
+      - accountId:
+         Ref: "AWS::AccountId"
+  vpc: ${self:custom.vpc}
   region: ${opt:region, 'us-west-2'}
   stage: ${opt:stage, 'TEST'}
   runtime: python3.8
@@ -28,6 +34,11 @@ custom:
   vpc:
     securityGroupIds: ${ssm:/iow/retriever-capture/${self:provider.stage}/securityGroupIds~split}
     subnetIds: ${ssm:/iow/aws/vpc/${self:provider.stage}/subnetIds~split}
+  esLogs:
+    endpoint: ${ssm:/iow/aws/vpc/${self:provider.stage}/elasticsearchEndpoint}
+    index: ${self:service}
+    retentionInDays: 90
+    filterPattern: "?ERROR ?CRITICAL"
 
 functions:
   aqtsErrorHandler:
@@ -47,7 +58,6 @@ functions:
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
       MAX_RETRIES: 6
       LOG_LEVEL: ERROR
-    vpc: ${self:custom.vpc}
 
 resources:
   Resources:
@@ -119,6 +129,7 @@ resources:
 plugins:
   - serverless-plugin-git-variables
   - serverless-python-requirements
+  - serverless-es-logs
 
 package:
   exclude:
