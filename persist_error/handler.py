@@ -61,7 +61,7 @@ def lambda_handler(event, context):
             f'Step function execution {execution_arn} has terminally failed. '
             # TODO eventually we would like a link to the elasticsearch log from the failed lambda.  Minimally, we'll
             # TODO need to do IOW-729 first.
-            f'The file we attempted to process: {json_file}'
+            f'The file we attempted to process: {json_file}. '
             f'This input has exceeded {max_retries} failures: \n {json.dumps(initial_input, indent=4)}.\n'
             f'Please take a closer look at the underlying records and data.'
         )
