@@ -4,6 +4,7 @@ Tests for the AWS Lambda handler.
 """
 import json
 from unittest import TestCase, mock
+import warnings
 
 from ..handler import lambda_handler
 
@@ -134,33 +135,38 @@ class TestLambdaHandler(TestCase):
     @mock.patch('persist_error.handler.send_message', autospec=True)
     @mock.patch('persist_error.handler.send_notification', autospec=True)
     def test_terminal_failure_behavior_with_json_file(self, mock_sn, mock_sm):
-        lambda_handler(self.terminal_fail_event_with_json_file, self.context)
-        expected_output = {
-            'Record': {
-                'eventVersion': '2.1',
-                'eventSource': 'aws:s3',
-                's3': {
-                    'object': {
-                        'key': self.json_file
+        with warnings.catch_warnings(record=True) as w:
+            lambda_handler(self.terminal_fail_event_with_json_file, self.context)
+            # test warning behavior
+            self.assertEqual(len(w), 1)
+            self.assertTrue(issubclass(w[-1].category, UserWarning))
+            # test AWS service integration behavior
+            expected_output = {
+                'Record': {
+                    'eventVersion': '2.1',
+                    'eventSource': 'aws:s3',
+                    's3': {
+                        'object': {
+                            'key': self.json_file
+                        }
                     }
-                }
-            },
-            'previousExecutions': [
-                self.initial_execution_arn,
-                self.subsequent_execution_arn,
-                self.terminal_fail_execution_arn
-            ],
-            'stepFunctionFails': 7
-        }
-        expected_notification_message_body = (
-            f'Step function execution {self.terminal_fail_execution_arn} has terminally failed. '
-            f'The file we attempted to process: {self.json_file}'
-            f'This input has exceeded {self.max_retries} failures: \n {json.dumps(expected_output, indent=4)}.\n'
-            f'Please take a closer look at the underlying records and data.'
-        )
-        mock_sm.assert_not_called()
-        mock_sn.assert_called_with(
-            self.sns_arn,
-            expected_notification_message_body,
-            subject_line='Excessive Capture Failures Reported'
-        )
+                },
+                'previousExecutions': [
+                    self.initial_execution_arn,
+                    self.subsequent_execution_arn,
+                    self.terminal_fail_execution_arn
+                ],
+                'stepFunctionFails': 7
+            }
+            expected_notification_message_body = (
+                f'Step function execution {self.terminal_fail_execution_arn} has terminally failed. '
+                f'The file we attempted to process: {self.json_file}'
+                f'This input has exceeded {self.max_retries} failures: \n {json.dumps(expected_output, indent=4)}.\n'
+                f'Please take a closer look at the underlying records and data.'
+            )
+            mock_sm.assert_not_called()
+            mock_sn.assert_called_with(
+                self.sns_arn,
+                expected_notification_message_body,
+                subject_line='Excessive Capture Failures Reported'
+            )
