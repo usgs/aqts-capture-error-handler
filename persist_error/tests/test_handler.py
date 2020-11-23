@@ -25,6 +25,8 @@ class TestLambdaHandler(TestCase):
         self.initial_execution_arn = 'arn:aws:states:us-south-10:98877654311:blah:a17h83j-p84321'
         self.subsequent_execution_arn = 'arn:aws:states:us-south-10:98877654311:blah:ab423cf-7753ae'
         self.terminal_fail_execution_arn = 'arn:aws:states:us-south-10:98877654311:blah:i3m556d-b5903fe'
+        self.json_file = 'body_getTSData_3408_7664109d-4bf5-42eb-bb84-9505cd79137f.json'
+        self.json_file_not_found = 'could not parse json file from state machine input'
 
         self.state_machine_start_input = {
             'Record': {'eventVersion': '2.1', 'eventSource': 'aws:s3'}
@@ -40,6 +42,20 @@ class TestLambdaHandler(TestCase):
             'stepFunctionFails': 6
         }
 
+        self.terminal_fail_start_input_with_json_file = {
+            'Record': {
+                'eventVersion': '2.1',
+                'eventSource': 'aws:s3',
+                's3': {
+                    'object': {
+                        'key': self.json_file
+                    }
+                }
+            },
+            'previousExecutions': [self.initial_execution_arn, self.subsequent_execution_arn],
+            'stepFunctionFails': 6
+        }
+
         self.initial_event = {'executionArn': self.initial_execution_arn, 'startInput': self.state_machine_start_input}
         self.subsequent_event = {
             'executionArn': self.subsequent_execution_arn,
@@ -48,6 +64,11 @@ class TestLambdaHandler(TestCase):
         self.terminal_fail_event = {
             'executionArn': self.terminal_fail_execution_arn,
             'startInput': self.terminal_fail_start_input
+        }
+
+        self.terminal_fail_event_with_json_file = {
+            'executionArn': self.terminal_fail_execution_arn,
+            'startInput': self.terminal_fail_start_input_with_json_file
         }
 
         self.context = {'element': 'lithium'}
@@ -98,7 +119,43 @@ class TestLambdaHandler(TestCase):
         }
         expected_notification_message_body = (
             f'Step function execution {self.terminal_fail_execution_arn} has terminally failed. '
-            f'This input has exceeded {self.max_retries} failures: {json.dumps(expected_output)}.\n'
+            f'The file we attempted to process: {self.json_file_not_found}'
+            f'This input has exceeded {self.max_retries} failures: \n {json.dumps(expected_output, indent=4)}.\n'
+            f'Please take a closer look at the underlying records and data.'
+        )
+        mock_sm.assert_not_called()
+        mock_sn.assert_called_with(
+            self.sns_arn,
+            expected_notification_message_body,
+            subject_line='Excessive Capture Failures Reported'
+        )
+
+    @mock.patch.dict('persist_error.handler.os.environ', mock_env_vars)
+    @mock.patch('persist_error.handler.send_message', autospec=True)
+    @mock.patch('persist_error.handler.send_notification', autospec=True)
+    def test_terminal_failure_behavior_with_json_file(self, mock_sn, mock_sm):
+        lambda_handler(self.terminal_fail_event_with_json_file, self.context)
+        expected_output = {
+            'Record': {
+                'eventVersion': '2.1',
+                'eventSource': 'aws:s3',
+                's3': {
+                    'object': {
+                        'key': self.json_file
+                    }
+                }
+            },
+            'previousExecutions': [
+                self.initial_execution_arn,
+                self.subsequent_execution_arn,
+                self.terminal_fail_execution_arn
+            ],
+            'stepFunctionFails': 7
+        }
+        expected_notification_message_body = (
+            f'Step function execution {self.terminal_fail_execution_arn} has terminally failed. '
+            f'The file we attempted to process: {self.json_file}'
+            f'This input has exceeded {self.max_retries} failures: \n {json.dumps(expected_output, indent=4)}.\n'
             f'Please take a closer look at the underlying records and data.'
         )
         mock_sm.assert_not_called()

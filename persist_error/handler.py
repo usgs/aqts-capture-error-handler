@@ -46,9 +46,18 @@ def lambda_handler(event, context):
         # abort retry attempts if there more failures than the set condition
         # send a message to SNS for human to deal with it
         subject = 'Excessive Capture Failures Reported'
+
+        try:
+            json_file = initial_input['Record']['s3']['object']['key']
+        except KeyError:
+            json_file = 'could not parse json file from state machine input'
+
         failure_message = (
             f'Step function execution {execution_arn} has terminally failed. '
-            f'This input has exceeded {max_retries} failures: {json.dumps(initial_input)}.\n'
+            # TODO eventually we would like a link to the elasticsearch log from the failed lambda.  Minimally, we'll
+            # TODO need to do IOW-729 first.
+            f'The file we attempted to process: {json_file}'
+            f'This input has exceeded {max_retries} failures: \n {json.dumps(initial_input, indent=4)}.\n'
             f'Please take a closer look at the underlying records and data.'
         )
         resp = send_notification(sns_arn, failure_message, subject_line=subject,)
