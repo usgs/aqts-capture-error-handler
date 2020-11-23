@@ -21,6 +21,7 @@ def lambda_handler(event, context):
     sns_arn = os.getenv('AWS_SNS_ARN')
     region = os.getenv('AWS_DEPLOYMENT_REGION')
     max_retries = int(os.getenv('MAX_RETRIES', 4))
+    deploy_stage = os.getenv('DEPLOY_STAGE')
 
     execution_arn = event['executionArn']
     initial_input = event['startInput']
@@ -51,8 +52,10 @@ def lambda_handler(event, context):
 
         try:
             json_file = initial_input['Record']['s3']['object']['key']
+            s3_url = f'https://s3.console.aws.amazon.com/s3/object/iow-retriever-capture-{deploy_stage.lower()}?region={region}&prefix={json_file}'
         except KeyError:
             json_file = 'could not parse json file from state machine input'
+            s3_url = 'json file could not be parsed from state machine input, no s3 url generated'
 
         terminal_warning = f'File "{json_file}" has terminally failed in {execution_arn}.'
         warnings.warn(terminal_warning, UserWarning)
@@ -61,7 +64,7 @@ def lambda_handler(event, context):
             f'Step function execution {execution_arn} has terminally failed. \n'
             # TODO eventually we would like a link to the elasticsearch log from the failed lambda.  Minimally, we'll
             # TODO need to do IOW-729 first.
-            f'The file we attempted to process: {json_file} \n'
+            f'The file we attempted to process: {s3_url} \n'
             f'This input has exceeded {max_retries} failures: \n {json.dumps(initial_input, indent=4)}.\n'
             f'Please take a closer look at the underlying records and data.'
         )
