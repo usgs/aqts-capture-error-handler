@@ -1,11 +1,13 @@
 import json
 import os
 import logging
+import warnings
 
 from .sns import send_notification
 from .sqs import send_message
 
 
+logging.captureWarnings(capture=True)
 log_level = os.getenv('LOG_LEVEL', 'ERROR')
 logger = logging.getLogger()
 logger.setLevel(log_level)
@@ -51,6 +53,9 @@ def lambda_handler(event, context):
             json_file = initial_input['Record']['s3']['object']['key']
         except KeyError:
             json_file = 'could not parse json file from state machine input'
+
+        terminal_warning = f'File "{json_file}" has terminally failed in {execution_arn}.'
+        warnings.warn(terminal_warning, UserWarning)
 
         failure_message = (
             f'Step function execution {execution_arn} has terminally failed. '
