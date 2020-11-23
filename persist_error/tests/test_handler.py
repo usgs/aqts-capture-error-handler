@@ -48,7 +48,7 @@ class TestLambdaHandler(TestCase):
                 'eventSource': 'aws:s3',
                 's3': {
                     'object': {
-                        'key': 'body_getTSData_3408_7664109d-4bf5-42eb-bb84-9505cd79137f.json'
+                        'key': self.json_file
                     }
                 }
             },

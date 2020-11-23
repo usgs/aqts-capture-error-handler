@@ -60,7 +60,6 @@ def lambda_handler(event, context):
             f'This input has exceeded {max_retries} failures: \n {json.dumps(initial_input, indent=4)}.\n'
             f'Please take a closer look at the underlying records and data.'
         )
-        print(failure_message)
         resp = send_notification(sns_arn, failure_message, subject_line=subject,)
         logger.info(f'Input failed more than {max_retries} times: {initial_input}. Notification sent to SNS: {resp}.')
     return initial_input
