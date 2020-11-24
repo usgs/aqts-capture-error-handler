@@ -15,13 +15,11 @@ class TestLambdaHandler(TestCase):
     sns_arn = 'arn:aws:sns:us-south-23:5746521541:fake-notification'
     region = 'us-south-10'
     max_retries = 6
-    deploy_stage = 'DEV'
     mock_env_vars = {
         'AWS_SQS_QUEUE_URL': queue_url,
         'AWS_SNS_ARN': sns_arn,
         'AWS_DEPLOYMENT_REGION': region,
         'MAX_RETRIES': str(max_retries),
-        'DEPLOY_STAGE': deploy_stage
     }
 
     def setUp(self):
@@ -29,8 +27,10 @@ class TestLambdaHandler(TestCase):
         self.subsequent_execution_arn = 'arn:aws:states:us-south-10:98877654311:blah:ab423cf-7753ae'
         self.terminal_fail_execution_arn = 'arn:aws:states:us-south-10:98877654311:blah:i3m556d-b5903fe'
         self.json_file = 'body_getTSData_3408_7664109d-4bf5-42eb-bb84-9505cd79137f.json'
-        self.s3_url = f'https://s3.console.aws.amazon.com/s3/object/iow-retriever-capture-dev?region={self.region}&prefix={self.json_file}'
+        self.s3_bucket = 'iow-retriever-capture-dev'
+        self.s3_url = f'https://s3.console.aws.amazon.com/s3/object/{self.s3_bucket}?region={self.region}&prefix={self.json_file}'
         self.s3_url_not_generated = 'json file could not be parsed from state machine input, no s3 url generated'
+
 
         self.state_machine_start_input = {
             'Record': {'eventVersion': '2.1', 'eventSource': 'aws:s3'}
@@ -51,6 +51,9 @@ class TestLambdaHandler(TestCase):
                 'eventVersion': '2.1',
                 'eventSource': 'aws:s3',
                 's3': {
+                    'bucket': {
+                        'name': self.s3_bucket
+                    },
                     'object': {
                         'key': self.json_file
                     }
@@ -124,7 +127,8 @@ class TestLambdaHandler(TestCase):
         expected_notification_message_body = (
             f'Step function execution {self.terminal_fail_execution_arn} has terminally failed. \n'
             f'The file we attempted to process: {self.s3_url_not_generated} \n'
-            f'This input has exceeded {self.max_retries} failures: \n {json.dumps(expected_output, indent=4)}.\n'
+            f'This input has exceeded {self.max_retries} failures:\n'
+            f'{json.dumps(expected_output, indent=4)}.\n'
             f'Please take a closer look at the underlying records and data.'
         )
         mock_sm.assert_not_called()
@@ -149,6 +153,9 @@ class TestLambdaHandler(TestCase):
                     'eventVersion': '2.1',
                     'eventSource': 'aws:s3',
                     's3': {
+                        'bucket': {
+                            'name': self.s3_bucket
+                        },
                         'object': {
                             'key': self.json_file
                         }
@@ -164,7 +171,8 @@ class TestLambdaHandler(TestCase):
             expected_notification_message_body = (
                 f'Step function execution {self.terminal_fail_execution_arn} has terminally failed. \n'
                 f'The file we attempted to process: {self.s3_url} \n'
-                f'This input has exceeded {self.max_retries} failures: \n {json.dumps(expected_output, indent=4)}.\n'
+                f'This input has exceeded {self.max_retries} failures:\n'
+                f'{json.dumps(expected_output, indent=4)}.\n'
                 f'Please take a closer look at the underlying records and data.'
             )
             mock_sm.assert_not_called()
