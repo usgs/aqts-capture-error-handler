@@ -120,8 +120,9 @@ class TestLambdaHandler(TestCase):
         }
         expected_notification_message_body = (
             f'Step function execution {self.terminal_fail_execution_arn} has terminally failed. \n'
-            f'The file we attempted to process: {self.json_file_not_found} \n'
-            f'This input has exceeded {self.max_retries} failures: \n {json.dumps(expected_output, indent=4)}.\n'
+            f'The file we attempted to process: {self.json_file_not_found}.\n'
+            f'This input has exceeded {self.max_retries} failures:\n'
+            f'{json.dumps(expected_output, indent=4)}.\n'
             f'Please take a closer look at the underlying records and data.'
         )
         mock_sm.assert_not_called()
@@ -160,8 +161,9 @@ class TestLambdaHandler(TestCase):
             }
             expected_notification_message_body = (
                 f'Step function execution {self.terminal_fail_execution_arn} has terminally failed. \n'
-                f'The file we attempted to process: {self.json_file} \n'
-                f'This input has exceeded {self.max_retries} failures: \n {json.dumps(expected_output, indent=4)}.\n'
+                f'The file we attempted to process: {self.json_file}.\n'
+                f'This input has exceeded {self.max_retries} failures:\n'
+                f'{json.dumps(expected_output, indent=4)}.\n'
                 f'Please take a closer look at the underlying records and data.'
             )
             mock_sm.assert_not_called()
