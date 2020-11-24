@@ -54,15 +54,24 @@ def lambda_handler(event, context):
         except KeyError:
             json_file = 'could not parse json file from state machine input'
 
-        terminal_warning = f'File "{json_file}" has terminally failed in {execution_arn}.'
+        try:
+            json_file_size_mb = float(initial_input['Record']['s3']['object']['size']) * 10**-6
+        except KeyError:
+            json_file_size_mb = 'unknown'
+
+        terminal_warning = (
+            f'File "{json_file}" with {json_file_size_mb} MB of data has had a'
+            f'terminal failure in step function execution {execution_arn}.'
+        )
         warnings.warn(terminal_warning, UserWarning)
 
         failure_message = (
             f'Step function execution {execution_arn} has terminally failed. \n'
             # TODO eventually we would like a link to the elasticsearch log from the failed lambda.  Minimally, we'll
             # TODO need to do IOW-729 first.
-            f'The file we attempted to process: {json_file} \n'
-            f'This input has exceeded {max_retries} failures: \n {json.dumps(initial_input, indent=4)}.\n'
+            f'The file we attempted to process: {json_file}.\n'
+            f'This input has exceeded {max_retries} failures:\n'
+            f'{json.dumps(initial_input, indent=4)}.\n'
             f'Please take a closer look at the underlying records and data.'
         )
         resp = send_notification(sns_arn, failure_message, subject_line=subject,)
