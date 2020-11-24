@@ -31,7 +31,6 @@ class TestLambdaHandler(TestCase):
         self.s3_url = f'https://s3.console.aws.amazon.com/s3/object/{self.s3_bucket}?region={self.region}&prefix={self.json_file}'
         self.s3_url_not_generated = 'json file could not be parsed from state machine input, no s3 url generated'
 
-
         self.state_machine_start_input = {
             'Record': {'eventVersion': '2.1', 'eventSource': 'aws:s3'}
         }
