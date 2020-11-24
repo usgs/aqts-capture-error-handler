@@ -54,7 +54,15 @@ def lambda_handler(event, context):
         except KeyError:
             json_file = 'could not parse json file from state machine input'
 
-        terminal_warning = f'File "{json_file}" has terminally failed in {execution_arn}.'
+        try:
+            json_file_size_mb = float(initial_input['Record']['s3']['object']['size']) * 10**-6
+        except KeyError:
+            json_file_size_mb = 'unknown'
+
+        terminal_warning = (
+            f'File "{json_file}" with {json_file_size_mb} MB of data has '
+            f'terminally failed in step function execution {execution_arn}.'
+        )
         warnings.warn(terminal_warning, UserWarning)
 
         failure_message = (
