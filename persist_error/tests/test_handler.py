@@ -19,7 +19,7 @@ class TestLambdaHandler(TestCase):
         'AWS_SQS_QUEUE_URL': queue_url,
         'AWS_SNS_ARN': sns_arn,
         'AWS_DEPLOYMENT_REGION': region,
-        'MAX_RETRIES': str(max_retries),
+        'MAX_RETRIES': str(max_retries)
     }
 
     def setUp(self):
