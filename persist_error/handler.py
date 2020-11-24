@@ -60,8 +60,8 @@ def lambda_handler(event, context):
             json_file_size_mb = 'unknown'
 
         terminal_warning = (
-            f'File "{json_file}" with {json_file_size_mb} MB of data has '
-            f'terminally failed in step function execution {execution_arn}.'
+            f'File "{json_file}" with {json_file_size_mb} MB of data has had a'
+            f'terminal failure in step function execution {execution_arn}.'
         )
         warnings.warn(terminal_warning, UserWarning)
 
