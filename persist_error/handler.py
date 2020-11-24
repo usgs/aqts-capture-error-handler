@@ -51,8 +51,11 @@ def lambda_handler(event, context):
 
         try:
             json_file = initial_input['Record']['s3']['object']['key']
+            s3_bucket = initial_input['Record']['s3']['bucket']['name']
+            s3_url = f'https://s3.console.aws.amazon.com/s3/object/{s3_bucket}?region={region}&prefix={json_file}'
         except KeyError:
             json_file = 'could not parse json file from state machine input'
+            s3_url = 'json file could not be parsed from state machine input, no s3 url generated'
 
         try:
             json_file_size_mb = float(initial_input['Record']['s3']['object']['size']) * 10**-6
@@ -69,7 +72,7 @@ def lambda_handler(event, context):
             f'Step function execution {execution_arn} has terminally failed. \n'
             # TODO eventually we would like a link to the elasticsearch log from the failed lambda.  Minimally, we'll
             # TODO need to do IOW-729 first.
-            f'The file we attempted to process: {json_file}.\n'
+            f'The file we attempted to process: {s3_url} \n'
             f'This input has exceeded {max_retries} failures:\n'
             f'{json.dumps(initial_input, indent=4)}.\n'
             f'Please take a closer look at the underlying records and data.'
