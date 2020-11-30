@@ -69,7 +69,7 @@ resources:
     snsSubscription:
       Type: AWS::SNS::Subscription
       Properties:
-        Endpoint: GW-W-OCOO-IOW-TSPipe-Errors@doimspp.onmicrosoft.com
+        Endpoint: GW-W-OCOO-IOW-AQTS-Terminal-Errors@doimspp.onmicrosoft.com
         Protocol: email
         TopicArn: { "Fn::Join": [ "", [ "arn:aws:sns:${self:provider.region}:", { "Ref": "AWS::AccountId" }, ":${self:resources.Resources.snsTopic.Properties.TopicName}" ] ] }
 
