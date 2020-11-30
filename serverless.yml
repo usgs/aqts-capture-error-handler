@@ -66,6 +66,13 @@ resources:
       Properties:
         DisplayName: ${self:service}-${self:provider.stage}-topic
         TopicName: ${self:service}-${self:provider.stage}-topic
+    snsSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: GW-W-OCOO-IOW-TSPipe-Errors@doimspp.onmicrosoft.com
+        Protocol: email
+        TopicArn: { "Fn::Join": [ "", [ "arn:aws:sns:${self:provider.region}:", { "Ref": "AWS::AccountId" }, ":${self:resources.Resources.snsTopic.Properties.TopicName}" ] ] }
+
     invocationAlarm:
       Type: AWS::CloudWatch::Alarm
       Properties:
