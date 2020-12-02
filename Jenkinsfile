@@ -48,7 +48,7 @@ pipeline {
                 sh '''
                 npm install
                 ./node_modules/serverless/bin/serverless.js deploy --stage ${DEPLOY_STAGE} --bucket ${BUCKET} --region us-west-2
-                ./node_modules/serverless/bin/serverless.js prune -n 5
+                ./node_modules/serverless/bin/serverless.js prune -n 5 --bucket ${BUCKET}
                 '''
             }
         }
