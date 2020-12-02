@@ -130,6 +130,7 @@ plugins:
   - serverless-plugin-git-variables
   - serverless-python-requirements
   - serverless-es-logs
+  - serverless-prune-plugin
 
 package:
   exclude:
