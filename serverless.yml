@@ -39,6 +39,9 @@ custom:
     index: ${self:service}
     retentionInDays: 90
     filterPattern: "?WARNING ?ERROR ?CRITICAL"
+  prune:
+    automatic: true
+    number: 3
 
 functions:
   aqtsErrorHandler:
