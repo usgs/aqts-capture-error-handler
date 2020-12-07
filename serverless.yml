@@ -82,9 +82,9 @@ resources:
         MetricName: Invocations
         Statistic: Sum
         ComparisonOperator: GreaterThanOrEqualToThreshold
-        Threshold: 500
+        Threshold: 1000
         Period: 60
-        EvaluationPeriods: 2
+        EvaluationPeriods: 4
         AlarmActions:
           - Ref: snsTopic
     concurrencyAlarm:
