@@ -53,6 +53,7 @@ functions:
             Ref: AWS::AccountId
     onError:
       Ref: snsTopic
+    reservedConcurrency: 290
     environment:
       AWS_SQS_QUEUE_URL:
         Ref: errorPersistQueue
