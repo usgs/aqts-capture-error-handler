@@ -17,7 +17,9 @@ provider:
   deploymentBucket:
     name: ${opt:bucket, iow-cloud-applications}
   stackTags:
-    "wma:applicationId": "Aquarius TS Capture Error Handler"
+    "wma:project_id": "aqtscapture"
+    "wma:subSystem": "aqtscapture"
+    "wma:application_id": "Aquarius TS Capture Error Handler"
     "wma:contact": "Andrew Yan ayan@usgs.gov"
     "wma:role": etl
     "wma:system": NWIS
