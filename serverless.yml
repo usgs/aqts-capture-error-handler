@@ -132,7 +132,7 @@ resources:
       Properties:
         QueueName: aqts-capture-error-queue-${self:provider.stage}
         MessageRetentionPeriod: 1209600
-    terminalErrorQueue:
+    terminalErrorsQueue:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: aqts-capture-terminal-errors-queue-${self:provider.stage}
