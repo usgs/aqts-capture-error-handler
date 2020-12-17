@@ -13,11 +13,14 @@ from ..handler import lambda_handler
 class TestLambdaHandler(TestCase):
 
     queue_url = 'https://sqs.us-south-10.amazonaws.com/887501/some-queue-name'
+    terminal_queue_url = 'https://sqs.us-south-10.amazonaws.com/887501/some-terminal-queue-name'
+
     sns_arn = 'arn:aws:sns:us-south-23:5746521541:fake-notification'
     region = 'us-south-10'
     max_retries = 6
     mock_env_vars = {
         'AWS_SQS_QUEUE_URL': queue_url,
+        'AWS_TERMINAL_QUEUE_URL': terminal_queue_url,
         'AWS_SNS_ARN': sns_arn,
         'AWS_DEPLOYMENT_REGION': region,
         'MAX_RETRIES': str(max_retries)
@@ -114,7 +117,6 @@ class TestLambdaHandler(TestCase):
     @mock.patch('persist_error.handler.send_message', autospec=True)
     @mock.patch('persist_error.handler.send_notification', autospec=True)
     def test_terminal_failure_behavior(self, mock_sn, mock_sm):
-        os.environ['AWS_TERMINAL_QUEUE_URL'] = 'terminal_queue'
 
         lambda_handler(self.terminal_fail_event, self.context)
         expected_output = {
@@ -134,7 +136,7 @@ class TestLambdaHandler(TestCase):
             f'Please take a closer look at the underlying records and data.'
         )
         mock_sm.assert_called_once_with(
-            'terminal_queue',
+            self.terminal_queue_url,
             'Step function execution arn:aws:states:us-south-10:98877654311:blah:i3m556d-b5903fe has terminally failed. \nThe file we attempted to process: json file could not be parsed from state machine input, no s3 url generated \nThis input has exceeded 6 failures:\n{\n    "Record": {\n        "eventVersion": "2.1",\n        "eventSource": "aws:s3"\n    },\n    "previousExecutions": [\n        "arn:aws:states:us-south-10:98877654311:blah:a17h83j-p84321",\n        "arn:aws:states:us-south-10:98877654311:blah:ab423cf-7753ae",\n        "arn:aws:states:us-south-10:98877654311:blah:i3m556d-b5903fe"\n    ],\n    "stepFunctionFails": 7\n}.\nPlease take a closer look at the underlying records and data.'
         )
         mock_sn.assert_called_with(
@@ -147,7 +149,6 @@ class TestLambdaHandler(TestCase):
     @mock.patch('persist_error.handler.send_message', autospec=True)
     @mock.patch('persist_error.handler.send_notification', autospec=True)
     def test_terminal_failure_behavior_with_json_file(self, mock_sn, mock_sm):
-        os.environ['AWS_TERMINAL_QUEUE_URL'] = 'terminal_queue'
         with warnings.catch_warnings(record=True) as w:
             lambda_handler(self.terminal_fail_event_with_json_file, self.context)
             # test warning behavior
@@ -182,7 +183,7 @@ class TestLambdaHandler(TestCase):
                 f'Please take a closer look at the underlying records and data.'
             )
             mock_sm.assert_called_once_with(
-                'terminal_queue',
+                self.terminal_queue_url,
                 'Step function execution arn:aws:states:us-south-10:98877654311:blah:i3m556d-b5903fe has terminally failed. \nThe file we attempted to process: https://s3.console.aws.amazon.com/s3/object/iow-retriever-capture-dev?region=us-south-10&prefix=body_getTSData_3408_7664109d-4bf5-42eb-bb84-9505cd79137f.json \nThis input has exceeded 6 failures:\n{\n    "Record": {\n        "eventVersion": "2.1",\n        "eventSource": "aws:s3",\n        "s3": {\n            "bucket": {\n                "name": "iow-retriever-capture-dev"\n            },\n            "object": {\n                "key": "body_getTSData_3408_7664109d-4bf5-42eb-bb84-9505cd79137f.json"\n            }\n        }\n    },\n    "previousExecutions": [\n        "arn:aws:states:us-south-10:98877654311:blah:a17h83j-p84321",\n        "arn:aws:states:us-south-10:98877654311:blah:ab423cf-7753ae",\n        "arn:aws:states:us-south-10:98877654311:blah:i3m556d-b5903fe"\n    ],\n    "stepFunctionFails": 7\n}.\nPlease take a closer look at the underlying records and data.'
             )
             mock_sn.assert_called_with(
