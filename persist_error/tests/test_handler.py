@@ -3,7 +3,6 @@ Tests for the AWS Lambda handler.
 
 """
 import json
-import os
 from unittest import TestCase, mock
 import warnings
 
