@@ -18,6 +18,7 @@ def lambda_handler(event, context):
     logger.info(f'Context: {context}')
 
     queue_url = os.getenv('AWS_SQS_QUEUE_URL')
+    terminal_queue_url = os.getenv('AWS_TERMINAL_QUEUE_URL')
     sns_arn = os.getenv('AWS_SNS_ARN')
     region = os.getenv('AWS_DEPLOYMENT_REGION')
     max_retries = int(os.getenv('MAX_RETRIES', 4))
@@ -78,5 +79,6 @@ def lambda_handler(event, context):
             f'Please take a closer look at the underlying records and data.'
         )
         resp = send_notification(sns_arn, failure_message, subject_line=subject,)
+        send_message(terminal_queue_url, failure_message)
         logger.info(f'Input failed more than {max_retries} times: {initial_input}. Notification sent to SNS: {resp}.')
     return initial_input

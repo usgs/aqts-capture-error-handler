@@ -58,6 +58,8 @@ functions:
     environment:
       AWS_SQS_QUEUE_URL:
         Ref: errorPersistQueue
+      AWS_TERMINAL_QUEUE_URL:
+        Ref: terminalErrorsQueue
       AWS_SNS_ARN:
         Ref: snsTopic
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
@@ -130,6 +132,11 @@ resources:
       Properties:
         QueueName: aqts-capture-error-queue-${self:provider.stage}
         MessageRetentionPeriod: 1209600
+    terminalErrorsQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: aqts-capture-terminal-errors-queue-${self:provider.stage}
+        MessageRetentionPeriod: 345600
 
 plugins:
   - serverless-plugin-git-variables
