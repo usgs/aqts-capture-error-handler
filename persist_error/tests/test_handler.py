@@ -30,6 +30,7 @@ class TestLambdaHandler(TestCase):
         self.s3_bucket = 'iow-retriever-capture-dev'
         self.s3_url = f'https://s3.console.aws.amazon.com/s3/object/{self.s3_bucket}?region={self.region}&prefix={self.json_file}'
         self.s3_url_not_generated = 'json file could not be parsed from state machine input, no s3 url generated'
+        self.cause = 'a blurb explaining why the step function execution failed'
 
         self.state_machine_start_input = {
             'Record': {'eventVersion': '2.1', 'eventSource': 'aws:s3'}
@@ -62,19 +63,26 @@ class TestLambdaHandler(TestCase):
             'stepFunctionFails': 6
         }
 
-        self.initial_event = {'executionArn': self.initial_execution_arn, 'startInput': self.state_machine_start_input}
+        self.initial_event = {
+            'executionArn': self.initial_execution_arn,
+            'startInput': self.state_machine_start_input,
+            'cause': self.cause
+        }
         self.subsequent_event = {
             'executionArn': self.subsequent_execution_arn,
-            'startInput': self.subsequent_start_input
+            'startInput': self.subsequent_start_input,
+            'cause': self.cause
         }
         self.terminal_fail_event = {
             'executionArn': self.terminal_fail_execution_arn,
-            'startInput': self.terminal_fail_start_input
+            'startInput': self.terminal_fail_start_input,
+            'cause': self.cause
         }
 
         self.terminal_fail_event_with_json_file = {
             'executionArn': self.terminal_fail_execution_arn,
-            'startInput': self.terminal_fail_start_input_with_json_file
+            'startInput': self.terminal_fail_start_input_with_json_file,
+            'cause': self.cause
         }
 
         self.context = {'element': 'lithium'}
@@ -128,6 +136,8 @@ class TestLambdaHandler(TestCase):
             f'The file we attempted to process: {self.s3_url_not_generated} \n'
             f'This input has exceeded {self.max_retries} failures:\n'
             f'{json.dumps(expected_output, indent=4)}.\n'
+            f'The execution reported this as the cause of the failure:\n'
+            f'{self.cause}.\n'
             f'Please take a closer look at the underlying records and data.'
         )
         mock_sm.assert_not_called()
@@ -172,6 +182,8 @@ class TestLambdaHandler(TestCase):
                 f'The file we attempted to process: {self.s3_url} \n'
                 f'This input has exceeded {self.max_retries} failures:\n'
                 f'{json.dumps(expected_output, indent=4)}.\n'
+                f'The execution reported this as the cause of the failure:\n'
+                f'{self.cause}.\n'
                 f'Please take a closer look at the underlying records and data.'
             )
             mock_sm.assert_not_called()

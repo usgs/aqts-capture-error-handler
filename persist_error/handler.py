@@ -24,7 +24,8 @@ def lambda_handler(event, context):
 
     execution_arn = event['executionArn']
     initial_input = event['startInput']
-    logger.info(f'Initial input: {initial_input}')
+    failure_cause = event['cause']
+    logger.info(f'Initial input: {initial_input}; failure cause {failure_cause}')
 
     try:
         initial_input['stepFunctionFails'] += 1
@@ -62,11 +63,20 @@ def lambda_handler(event, context):
         except KeyError:
             json_file_size_mb = 'unknown'
 
-        terminal_warning = (
-            f'File "{json_file}" with {json_file_size_mb} MB of data has had a '
-            f'terminal failure in step function execution {execution_arn}.'
-        )
-        warnings.warn(terminal_warning, UserWarning)
+        try:
+            pretty_failure_cause = json.loads(failure_cause)
+        except json.JSONDecodeError:
+            pretty_failure_cause = failure_cause
+        terminal_warning = {
+            'message': 'Terminal Failure Warning',
+            'file': {
+                'name': json_file,
+                'size': f'{json_file_size_mb} MB'
+            },
+            'execution_arn': execution_arn,
+            'cause': pretty_failure_cause
+        }
+        warnings.warn(json.dumps(terminal_warning), UserWarning)
 
         failure_message = (
             f'Step function execution {execution_arn} has terminally failed. \n'
@@ -75,6 +85,8 @@ def lambda_handler(event, context):
             f'The file we attempted to process: {s3_url} \n'
             f'This input has exceeded {max_retries} failures:\n'
             f'{json.dumps(initial_input, indent=4)}.\n'
+            f'The execution reported this as the cause of the failure:\n'
+            f'{failure_cause}.\n'
             f'Please take a closer look at the underlying records and data.'
         )
         resp = send_notification(sns_arn, failure_message, subject_line=subject,)
