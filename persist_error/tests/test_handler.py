@@ -146,7 +146,7 @@ class TestLambdaHandler(TestCase):
         )
         mock_sm.assert_called_once_with(
             self.terminal_queue_url,
-            'Step function execution arn:aws:states:us-south-10:98877654311:blah:i3m556d-b5903fe has terminally failed. \nThe file we attempted to process: json file could not be parsed from state machine input, no s3 url generated \nThis input has exceeded 6 failures:\n{\n    "Record": {\n        "eventVersion": "2.1",\n        "eventSource": "aws:s3"\n    },\n    "previousExecutions": [\n        "arn:aws:states:us-south-10:98877654311:blah:a17h83j-p84321",\n        "arn:aws:states:us-south-10:98877654311:blah:ab423cf-7753ae",\n        "arn:aws:states:us-south-10:98877654311:blah:i3m556d-b5903fe"\n    ],\n    "stepFunctionFails": 7\n}.\nPlease take a closer look at the underlying records and data.'
+            expected_notification_message_body
         )
         mock_sn.assert_called_with(
             self.sns_arn,
@@ -195,7 +195,7 @@ class TestLambdaHandler(TestCase):
             )
             mock_sm.assert_called_once_with(
                 self.terminal_queue_url,
-                'Step function execution arn:aws:states:us-south-10:98877654311:blah:i3m556d-b5903fe has terminally failed. \nThe file we attempted to process: https://s3.console.aws.amazon.com/s3/object/iow-retriever-capture-dev?region=us-south-10&prefix=body_getTSData_3408_7664109d-4bf5-42eb-bb84-9505cd79137f.json \nThis input has exceeded 6 failures:\n{\n    "Record": {\n        "eventVersion": "2.1",\n        "eventSource": "aws:s3",\n        "s3": {\n            "bucket": {\n                "name": "iow-retriever-capture-dev"\n            },\n            "object": {\n                "key": "body_getTSData_3408_7664109d-4bf5-42eb-bb84-9505cd79137f.json"\n            }\n        }\n    },\n    "previousExecutions": [\n        "arn:aws:states:us-south-10:98877654311:blah:a17h83j-p84321",\n        "arn:aws:states:us-south-10:98877654311:blah:ab423cf-7753ae",\n        "arn:aws:states:us-south-10:98877654311:blah:i3m556d-b5903fe"\n    ],\n    "stepFunctionFails": 7\n}.\nPlease take a closer look at the underlying records and data.'
+                expected_notification_message_body
             )
             mock_sn.assert_called_with(
                 self.sns_arn,
