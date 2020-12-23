@@ -75,9 +75,9 @@ resources:
       Properties:
         DisplayName: ${self:service}-${self:provider.stage}-topic
         TopicName: ${self:service}-${self:provider.stage}-topic
-    Subscription:
-      - Protocol: email
-        Endpoint: ${self:custom.mailingList.TERMINAL_ERRORS_GROUP}
+        Subscription:
+          - Protocol: email
+            Endpoint: ${self:custom.mailingList.TERMINAL_ERRORS_GROUP}
     invocationAlarm:
       Type: AWS::CloudWatch::Alarm
       Properties:
