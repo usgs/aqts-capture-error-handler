@@ -63,6 +63,7 @@ functions:
       AWS_SNS_ARN:
         Ref: snsTopic
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
+      DEPLOY_STAGE: ${self:provider.stage}
       MAX_RETRIES: 6
       LOG_LEVEL: WARNING
 
