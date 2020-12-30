@@ -96,8 +96,8 @@ def lambda_handler(event, context):
             f'{json.dumps(initial_input, indent=4)}.\n'
             f'The execution reported this as the cause of the failure:\n'
             f'{failure_cause}.\n\n'
-            f'To view the execution log in more detail, visit Cloudwatch Logs Insights: {logs_insights_url}\n'
-            f'Select {step_function_log_group} as the log group and enter the following query input:\n\n'
+            f'To view the execution log in more detail, visit Cloudwatch Logs Insights: {logs_insights_url}\n\n'
+            f'Select "{step_function_log_group}" as the log group and enter the following query input:\n\n'
             f'{logs_insights_query_string}\n\n'
             f'Please take a closer look at the underlying records and data.'
         )
