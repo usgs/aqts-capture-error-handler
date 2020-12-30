@@ -152,8 +152,8 @@ class TestLambdaHandler(TestCase):
             f'{json.dumps(expected_output, indent=4)}.\n'
             f'The execution reported this as the cause of the failure:\n'
             f'{self.cause}.\n\n'
-            f'To view the execution log in more detail, visit Cloudwatch Logs Insights: {self.logs_insights_url}\n'
-            f'Select {self.step_function_log_group} as the log group and enter the following query input:\n\n'
+            f'To view the execution log in more detail, visit Cloudwatch Logs Insights: {self.logs_insights_url}\n\n'
+            f'Select "{self.step_function_log_group}" as the log group and enter the following query input:\n\n'
             f'{self.logs_insights_query_string}\n\n'
             f'Please take a closer look at the underlying records and data.'
         )
@@ -204,8 +204,8 @@ class TestLambdaHandler(TestCase):
                 f'{json.dumps(expected_output, indent=4)}.\n'
                 f'The execution reported this as the cause of the failure:\n'
                 f'{self.cause}.\n\n'
-                f'To view the execution log in more detail, visit Cloudwatch Logs Insights: {self.logs_insights_url}\n'
-                f'Select {self.step_function_log_group} as the log group and enter the following query input:\n\n'
+                f'To view the execution log in more detail, visit Cloudwatch Logs Insights: {self.logs_insights_url}\n\n'
+                f'Select "{self.step_function_log_group}" as the log group and enter the following query input:\n\n'
                 f'{self.logs_insights_query_string}\n\n'
                 f'Please take a closer look at the underlying records and data.'
             )
