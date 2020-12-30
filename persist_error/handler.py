@@ -105,5 +105,3 @@ def lambda_handler(event, context):
         send_message(terminal_queue_url, failure_message)
         logger.info(f'Input failed more than {max_retries} times: {initial_input}. Notification sent to SNS: {resp}.')
     return initial_input
-
-
