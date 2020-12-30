@@ -5,3 +5,12 @@
 
 AWS Lambda function designed to persist inputs and exceptions that occur
 during AWS Step Function executions.
+
+## Unit Testing
+Make sure you have `python`, `pip`, and `venv` installed, navigate to the project root directory and run the following commands:
+```shell script
+python3 -m venv env
+source env/bin/activate
+pip install -r requirements.txt
+python -m unittest -v
+```

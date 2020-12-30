@@ -21,6 +21,7 @@ def lambda_handler(event, context):
     terminal_queue_url = os.getenv('AWS_TERMINAL_QUEUE_URL')
     sns_arn = os.getenv('AWS_SNS_ARN')
     region = os.getenv('AWS_DEPLOYMENT_REGION')
+    deploy_stage = os.getenv('DEPLOY_STAGE')
     max_retries = int(os.getenv('MAX_RETRIES', 4))
 
     execution_arn = event['executionArn']
@@ -79,15 +80,25 @@ def lambda_handler(event, context):
         }
         warnings.warn(json.dumps(terminal_warning), UserWarning)
 
+        step_function_log_group = f'step-functions-{deploy_stage.lower()}'
+        logs_insights_url = f'https://{region}.console.aws.amazon.com/cloudwatch/home?region={region}#logsV2:logs-insights'
+        logs_insights_query_string = (
+            f'fields @ timestamp, @ message\n'
+            f'| filter @ message like /{execution_arn}/\n'
+            f'| sort @ timestamp desc\n'
+            f'| limit 50'
+        )
+
         failure_message = (
             f'Step function execution {execution_arn} has terminally failed. \n'
-            # TODO eventually we would like a link to the elasticsearch log from the failed lambda.  Minimally, we'll
-            # TODO need to do IOW-729 first.
             f'The file we attempted to process: {s3_url} \n'
             f'This input has exceeded {max_retries} failures:\n'
             f'{json.dumps(initial_input, indent=4)}.\n'
             f'The execution reported this as the cause of the failure:\n'
-            f'{failure_cause}.\n'
+            f'{failure_cause}.\n\n'
+            f'To view the execution log in more detail, visit Cloudwatch Logs Insights: {logs_insights_url}\n'
+            f'Select {step_function_log_group} as the log group and enter the following query input:\n\n'
+            f'{logs_insights_query_string}\n\n'
             f'Please take a closer look at the underlying records and data.'
         )
         resp = send_notification(sns_arn, failure_message, subject_line=subject,)
