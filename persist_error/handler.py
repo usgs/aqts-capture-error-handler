@@ -80,24 +80,25 @@ def lambda_handler(event, context):
         }
         warnings.warn(json.dumps(terminal_warning), UserWarning)
 
-        # construct a logs insights query to view the entire state machine execution log
-        execution_arn_replace_colons = execution_arn.replace(':', '*3a')
         step_function_log_group = f'step-functions-{deploy_stage.lower()}'
-        time_interval_seconds = '86400'  # 1 day
-        logs_insights_url = f'https://{region}.console.aws.amazon.com/cloudwatch/home?region={region}#logsV2:logs-insights$3FqueryDetail$3D$257E$2528end$257E0$257Estart$257E-{time_interval_seconds}$257EtimeType$257E$2527RELATIVE$257Eunit$257E$2527seconds$257EeditorString$257E$2527fields*20*40timestamp*2c*20*40message*0a*7c*20filter*20*40message*20like*20*2f{execution_arn_replace_colons}*2f*0a*7c*20sort*20*40timestamp*20desc*0a*7c*20limit*2050*0a$257EisLiveTail$257Efalse$257EqueryId$257E$25276ae4a46e-cb22-461a-87a7-8d67fd2472e6$257Esource$257E$2528$257E$2527{step_function_log_group}$2529$2529\n'
-
-        #  arn:aws:states:us-west-2:579777464052:express:aqts-capture-state-machine-PROD-EXTERNAL:1688f902-f2c7-4af3-a615-b5074db1b21f:db54eb4b-483b-4019-80aa-5281b5901501
+        logs_insights_url = f'https://{region}.console.aws.amazon.com/cloudwatch/home?region={region}#logsV2:logs-insights'
+        logs_insights_query_string = (
+            f'fields @ timestamp, @ message\n'
+            f'| filter @ message like /{execution_arn}/\n'
+            f'| sort @ timestamp desc\n'
+            f'| limit 50'
+        )
 
         failure_message = (
             f'Step function execution {execution_arn} has terminally failed. \n'
-            # TODO eventually we would like a link to the elasticsearch log from the failed lambda.  Minimally, we'll
-            # TODO need to do IOW-729 first.
             f'The file we attempted to process: {s3_url} \n'
             f'This input has exceeded {max_retries} failures:\n'
             f'{json.dumps(initial_input, indent=4)}.\n'
             f'The execution reported this as the cause of the failure:\n'
-            f'{failure_cause}.\n'
-            f'To view the entire execution log: {logs_insights_url}\n'
+            f'{failure_cause}.\n\n'
+            f'To view the execution log in more detail, visit Cloudwatch Logs Insights: {logs_insights_url}\n'
+            f'Select {step_function_log_group} as the log group and enter the following query input:\n\n'
+            f'{logs_insights_query_string}\n\n'
             f'Please take a closer look at the underlying records and data.'
         )
         resp = send_notification(sns_arn, failure_message, subject_line=subject,)

@@ -16,13 +16,15 @@ class TestLambdaHandler(TestCase):
 
     sns_arn = 'arn:aws:sns:us-south-23:5746521541:fake-notification'
     region = 'us-south-10'
+    deploy_stage = 'DEV'
     max_retries = 6
     mock_env_vars = {
         'AWS_SQS_QUEUE_URL': queue_url,
         'AWS_TERMINAL_QUEUE_URL': terminal_queue_url,
         'AWS_SNS_ARN': sns_arn,
         'AWS_DEPLOYMENT_REGION': region,
-        'MAX_RETRIES': str(max_retries)
+        'MAX_RETRIES': str(max_retries),
+        'DEPLOY_STAGE': deploy_stage
     }
 
     def setUp(self):
@@ -34,6 +36,14 @@ class TestLambdaHandler(TestCase):
         self.s3_url = f'https://s3.console.aws.amazon.com/s3/object/{self.s3_bucket}?region={self.region}&prefix={self.json_file}'
         self.s3_url_not_generated = 'json file could not be parsed from state machine input, no s3 url generated'
         self.cause = 'a blurb explaining why the step function execution failed'
+        self.logs_insights_url = 'https://us-south-10.console.aws.amazon.com/cloudwatch/home?region=us-south-10#logsV2:logs-insights'
+        self.step_function_log_group = 'step-functions-dev'
+        self.logs_insights_query_string = (
+            f'fields @ timestamp, @ message\n'
+            f'| filter @ message like /{self.terminal_fail_execution_arn}/\n'
+            f'| sort @ timestamp desc\n'
+            f'| limit 50'
+        )
 
         self.state_machine_start_input = {
             'Record': {'eventVersion': '2.1', 'eventSource': 'aws:s3'}
@@ -141,7 +151,10 @@ class TestLambdaHandler(TestCase):
             f'This input has exceeded {self.max_retries} failures:\n'
             f'{json.dumps(expected_output, indent=4)}.\n'
             f'The execution reported this as the cause of the failure:\n'
-            f'{self.cause}.\n'
+            f'{self.cause}.\n\n'
+            f'To view the execution log in more detail, visit Cloudwatch Logs Insights: {self.logs_insights_url}\n'
+            f'Select {self.step_function_log_group} as the log group and enter the following query input:\n\n'
+            f'{self.logs_insights_query_string}\n\n'
             f'Please take a closer look at the underlying records and data.'
         )
         mock_sm.assert_called_once_with(
@@ -190,7 +203,10 @@ class TestLambdaHandler(TestCase):
                 f'This input has exceeded {self.max_retries} failures:\n'
                 f'{json.dumps(expected_output, indent=4)}.\n'
                 f'The execution reported this as the cause of the failure:\n'
-                f'{self.cause}.\n'
+                f'{self.cause}.\n\n'
+                f'To view the execution log in more detail, visit Cloudwatch Logs Insights: {self.logs_insights_url}\n'
+                f'Select {self.step_function_log_group} as the log group and enter the following query input:\n\n'
+                f'{self.logs_insights_query_string}\n\n'
                 f'Please take a closer look at the underlying records and data.'
             )
             mock_sm.assert_called_once_with(
