@@ -5,7 +5,7 @@
     "serverless": "2.16.1",
     "serverless-python-requirements": "^5.1.0",
     "serverless-plugin-git-variables": "^5.1.0",
-    "serverless-es-logs": "^3.4.1",
+    "serverless-es-logs": "^3.4.2",
     "serverless-prune-plugin": "^1.4.3"
   }
 }
